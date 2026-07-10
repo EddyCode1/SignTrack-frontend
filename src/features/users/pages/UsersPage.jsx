@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { getUsers } from '../../../shared/api/services/userService'
-
+//pagina de usuarios
 const UsersPage = () => {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
