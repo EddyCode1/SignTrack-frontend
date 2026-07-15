@@ -1,17 +1,28 @@
-# SignTrack Frontend — develop
+# SignTrack Frontend — ft/sajche
 
 App React (Vite) para la plataforma Teams inclusiva SignTrack.
 
-**Backend:** repo `Gappy99/SignTrack`, rama `develop`, Identity en `:5104`.
+**Backend:** repo `Gappy99/SignTrack`, rama `ft/sajche`, Identity en `:5104`.
 
 ## Inicio rápido
 
 ```bash
-git checkout develop
+git checkout ft/sajche
 pnpm install
 cp .env.example .env.development   # o crear manualmente
 pnpm dev
 ```
+
+### Todo en uno (backend + frontend)
+
+Con ambos repos en la misma carpeta (`SignTrack` y `SignTrack-frontend`):
+
+```bash
+# Desde frontend o backend
+pnpm start:all
+```
+
+Levanta Docker (Postgres/Redis), Identity en `:5104` y Vite en `:5173`.
 
 Abre `http://localhost:5173`. El proxy envía `/api` al backend Identity.
 
@@ -32,7 +43,7 @@ Para probar login real de nuevo: `VITE_AUTH_DISABLED=false` y reinicia `pnpm dev
 
 ## Backend en paralelo
 
-Ver [SignTrack/docs/FRONTEND_INTEGRATION.md](https://github.com/Gappy99/SignTrack/blob/develop/docs/FRONTEND_INTEGRATION.md)
+Ver [SignTrack/docs/FRONTEND_INTEGRATION.md](https://github.com/Gappy99/SignTrack/blob/ft/sajche/docs/FRONTEND_INTEGRATION.md)
 
 ```bash
 # En repo SignTrack
