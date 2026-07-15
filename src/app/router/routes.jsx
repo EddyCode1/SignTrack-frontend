@@ -16,13 +16,18 @@ import ProfilePage from '../../features/users/pages/ProfilePage'
 
 import ProtectedRoute from './ProtectedRoute'
 
-const homeRedirect = isAuthDisabled() ? APP_ROUTES.dashboard : APP_ROUTES.login
+const HomeRedirect = () => (
+  <Navigate
+    to={isAuthDisabled() ? APP_ROUTES.dashboard : APP_ROUTES.login}
+    replace
+  />
+)
 
 const router = createBrowserRouter(
   [
   {
     path: APP_ROUTES.home,
-    element: <Navigate to={homeRedirect} replace />,
+    element: <HomeRedirect />,
   },
   {
     path: APP_ROUTES.login,

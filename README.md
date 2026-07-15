@@ -36,11 +36,21 @@ taskkill /PID <pid> /T /F   # pid de netstat en :5104
 
 Levanta Docker (Postgres/Redis), Identity en `:5104` y Vite en `:5180`.
 
-Abre **`http://localhost:5180/signtrack/`** (prefijo propio para no chocar con otros proyectos en `:5173`). El proxy envía `/api` al backend Identity.
+Abre **`http://localhost:5180/signtrack/`** → redirige al login. El proxy envía `/api` al backend Identity.
 
-### Modo rápido (sin login) — temporal
+### Credenciales dev (backend Identity)
 
-En `.env.development`:
+Tras `pnpm start:all` y migraciones:
+
+| Usuario | Contraseña |
+|---------|------------|
+| `admin@SignTrack.com` | `Admin1234!` |
+
+Registra usuarios nuevos en `/signtrack/register`.
+
+### Modo rápido (sin login) — opcional
+
+Solo para maquetar UI sin backend. En `.env.development`:
 
 ```env
 VITE_AUTH_DISABLED=true
