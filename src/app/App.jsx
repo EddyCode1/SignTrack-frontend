@@ -12,19 +12,15 @@ function App() {
       <Toaster
         position="top-center"
         reverseOrder={false}
-        toastOptions={{
+          toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
+            background: '#242424',
             color: '#fff',
             borderRadius: '8px',
             fontSize: '14px',
           },
-          success: {
-            style: {
-              background: '#10b981',
-            },
-          },
+          success: { iconTheme: { primary: '#5b5fc7', secondary: '#fff' } },
           error: {
             style: {
               background: '#ef4444',

@@ -3,6 +3,8 @@ import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { getProfile, updateMyProfile } from '../../../shared/api/services/userService'
 
+import PageHeader from '../../../shared/components/PageHeader'
+
 const ProfilePage = () => {
   const { user, token, setUser } = useAuthStore()
   const [form, setForm] = useState({ name: '', surname: '', phone: '' })
@@ -56,60 +58,33 @@ const ProfilePage = () => {
     }
   }
 
-  if (loading) return <div className="p-6">Cargando perfil...</div>
+  if (loading) return <div className="text-[var(--muted)]">Cargando perfil...</div>
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-[var(--text)] mb-6">Mi Perfil</h1>
-      <form onSubmit={handleSubmit} className="card max-w-md space-y-4">
+    <div>
+      <PageHeader title="Mi perfil" subtitle="Actualiza tu información personal" />
+      <form onSubmit={handleSubmit} className="card max-w-lg space-y-4">
+        <label className="field block">
+          <span className="field__label">Nombre</span>
+          <input name="name" value={form.name} onChange={handleChange} maxLength={25} required className="field__input" />
+        </label>
+        <label className="field block">
+          <span className="field__label">Apellido</span>
+          <input name="surname" value={form.surname} onChange={handleChange} maxLength={25} required className="field__input" />
+        </label>
         <div>
-          <label className="text-sm text-[var(--muted)]">Nombre</label>
-          <input
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            maxLength={25}
-            required
-            className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
-          />
+          <span className="field__label">Email</span>
+          <p className="font-medium mt-1">{email || user?.email || '-'}</p>
         </div>
+        <label className="field block">
+          <span className="field__label">Teléfono</span>
+          <input name="phone" value={form.phone} onChange={handleChange} pattern="\d{8}" maxLength={8} required className="field__input" />
+        </label>
         <div>
-          <label className="text-sm text-[var(--muted)]">Apellido</label>
-          <input
-            name="surname"
-            value={form.surname}
-            onChange={handleChange}
-            maxLength={25}
-            required
-            className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
-          />
+          <span className="field__label">Rol</span>
+          <p className="font-medium mt-1">{rol || user?.rol || '-'}</p>
         </div>
-        <div>
-          <label className="text-sm text-[var(--muted)]">Email</label>
-          <p className="font-semibold mt-1">{email || user?.email || '-'}</p>
-        </div>
-        <div>
-          <label className="text-sm text-[var(--muted)]">Teléfono</label>
-          <input
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            pattern="\d{8}"
-            maxLength={8}
-            placeholder="8 dígitos"
-            required
-            className="w-full mt-1 px-3 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
-          />
-        </div>
-        <div>
-          <label className="text-sm text-[var(--muted)]">Rol</label>
-          <p className="font-semibold mt-1">{rol || user?.rol || '-'}</p>
-        </div>
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-2 px-4 rounded-lg bg-[var(--accent)] text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
-        >
+        <button type="submit" disabled={saving} className="btn-brand btn-brand--full">
           {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>
       </form>

@@ -23,40 +23,41 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="w-full">
-      <h2 className="text-3xl font-bold text-white text-center mb-8">SignTrack</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+    <div className="auth-form">
+      <h2 className="auth-form__title">Iniciar sesión</h2>
+      <p className="auth-form__subtitle">Accede a tu espacio de trabajo SignTrack</p>
+
+      <form onSubmit={handleSubmit} className="auth-form__fields">
+        <label className="field">
+          <span className="field__label">Correo o usuario</span>
           <input
             type="text"
-            placeholder="Correo o usuario"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+            className="field__input"
             required
+            autoComplete="username"
           />
-        </div>
-        <div>
+        </label>
+        <label className="field">
+          <span className="field__label">Contraseña</span>
           <input
             type="password"
-            placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40"
+            className="field__input"
             required
+            autoComplete="current-password"
           />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition disabled:opacity-50"
-        >
-          {loading ? 'Ingresando...' : 'Iniciar Sesión'}
+        </label>
+        <button type="submit" disabled={loading} className="btn-brand btn-brand--full">
+          {loading ? 'Ingresando...' : 'Iniciar sesión'}
         </button>
       </form>
-      <p className="text-center text-white/60 mt-6">
+
+      <p className="auth-form__footer">
         ¿No tienes cuenta?{' '}
-        <Link to={APP_ROUTES.register} className="text-white hover:underline">Regístrate</Link>
+        <Link to={APP_ROUTES.register} className="auth-form__link">Regístrate</Link>
       </p>
     </div>
   )

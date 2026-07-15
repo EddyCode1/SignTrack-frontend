@@ -23,31 +23,45 @@ const RegisterPage = () => {
   }
 
   return (
-    <div className="w-full">
-      <h2 className="text-3xl font-bold text-white text-center mb-8">Crear Cuenta</h2>
-      <form onSubmit={handleSubmit} className="space-y-3">
-        <div className="flex gap-3">
-          <input name="name" placeholder="Nombre" value={form.name} onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required />
-          <input name="surname" placeholder="Apellido" value={form.surname} onChange={handleChange}
-            className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required />
+    <div className="auth-form">
+      <h2 className="auth-form__title">Crear cuenta</h2>
+      <p className="auth-form__subtitle">Únete a la plataforma inclusiva SignTrack</p>
+
+      <form onSubmit={handleSubmit} className="auth-form__fields">
+        <div className="auth-form__row">
+          <label className="field">
+            <span className="field__label">Nombre</span>
+            <input name="name" value={form.name} onChange={handleChange} className="field__input" required />
+          </label>
+          <label className="field">
+            <span className="field__label">Apellido</span>
+            <input name="surname" value={form.surname} onChange={handleChange} className="field__input" required />
+          </label>
         </div>
-        <input name="username" placeholder="Usuario" value={form.username} onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required />
-        <input name="email" type="email" placeholder="Correo electrónico" value={form.email} onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required />
-        <input name="password" type="password" placeholder="Contraseña (mín. 8 caracteres)" value={form.password} onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required minLength={8} />
-        <input name="phone" placeholder="Teléfono (8 dígitos)" value={form.phone} onChange={handleChange}
-          className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:border-white/40" required />
-        <button type="submit" disabled={loading}
-          className="w-full py-3 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition disabled:opacity-50">
+        <label className="field">
+          <span className="field__label">Usuario</span>
+          <input name="username" value={form.username} onChange={handleChange} className="field__input" required />
+        </label>
+        <label className="field">
+          <span className="field__label">Correo electrónico</span>
+          <input name="email" type="email" value={form.email} onChange={handleChange} className="field__input" required />
+        </label>
+        <label className="field">
+          <span className="field__label">Contraseña</span>
+          <input name="password" type="password" value={form.password} onChange={handleChange} className="field__input" required minLength={8} />
+        </label>
+        <label className="field">
+          <span className="field__label">Teléfono</span>
+          <input name="phone" value={form.phone} onChange={handleChange} className="field__input" required pattern="\d{8}" maxLength={8} />
+        </label>
+        <button type="submit" disabled={loading} className="btn-brand btn-brand--full">
           {loading ? 'Registrando...' : 'Registrarse'}
         </button>
       </form>
-      <p className="text-center text-white/60 mt-6">
+
+      <p className="auth-form__footer">
         ¿Ya tienes cuenta?{' '}
-        <Link to={APP_ROUTES.login} className="text-white hover:underline">Inicia sesión</Link>
+        <Link to={APP_ROUTES.login} className="auth-form__link">Inicia sesión</Link>
       </p>
     </div>
   )

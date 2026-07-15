@@ -1,52 +1,57 @@
 import { useState } from 'react'
-import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/Sidebar'
-import NavbarBlack from '../components/NavbarBlack'
+import { Outlet, useLocation } from 'react-router-dom'
+import AppRail from '../components/AppRail'
+import AppHeader from '../components/AppHeader'
 import { isAuthDisabled } from '../../shared/config/devAuth'
+import { APP_ROUTES } from '../../shared/config/paths'
+
+const routeTitles = {
+  [APP_ROUTES.dashboard]: 'Inicio',
+  [APP_ROUTES.dashboardChats]: 'Chats',
+  [APP_ROUTES.dashboardCalls]: 'Llamadas',
+  [APP_ROUTES.dashboardGroups]: 'Grupos',
+  [APP_ROUTES.dashboardRequests]: 'Solicitudes',
+  [APP_ROUTES.dashboardTasks]: 'Tareas',
+  [APP_ROUTES.dashboardCalendar]: 'Calendario',
+  [APP_ROUTES.dashboardProfile]: 'Mi perfil',
+  [APP_ROUTES.dashboardUsers]: 'Usuarios',
+}
 
 const MainLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const location = useLocation()
 
-  const handleToggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev)
-  }
+  const pathname = location.pathname.replace(/\/$/, '') || APP_ROUTES.dashboard
+  const headerTitle =
+    routeTitles[pathname] ||
+    (pathname.includes('/groups/') ? 'Detalle de grupo' : 'SignTrack')
 
   return (
-    <div className="flex h-screen bg-[var(--bg)] flex-col">
+    <div className="app-shell">
       {isAuthDisabled() && (
-        <div
-          className="shrink-0 bg-amber-500 text-black text-center text-sm py-1.5 px-4 font-medium"
-          role="status"
-        >
-          Modo dev: auth desactivado — solo pruebas de UI (VITE_AUTH_DISABLED=true)
+        <div className="app-dev-banner" role="status">
+          Modo dev: auth desactivado — solo pruebas de UI
         </div>
       )}
 
-      <div className="flex flex-1 min-h-0">
-        <Sidebar isOpen={isSidebarOpen} />
+      <div className="app-shell__body">
+        <AppRail
+          mobileOpen={mobileNavOpen}
+          onCloseMobile={() => setMobileNavOpen(false)}
+        />
 
-        <div
-          className="flex-1 flex flex-col min-w-0 overflow-hidden transition-[margin] duration-300 ease-in-out"
-          style={{ marginLeft: isSidebarOpen ? '288px' : '0' }}
-        >
-          <NavbarBlack onToggleSidebar={handleToggleSidebar} />
+        <div className="app-shell__main">
+          <AppHeader
+            title={headerTitle}
+            onMenuClick={() => setMobileNavOpen(true)}
+          />
 
-          <main className="flex-1 overflow-auto p-4 md:p-6">
-            <Outlet />
+          <main className="app-main" key={location.pathname}>
+            <div className="app-main__inner page-enter">
+              <Outlet />
+            </div>
           </main>
         </div>
-
-        <aside
-          className="hidden xl:flex w-14 shrink-0 flex-col items-center border-l border-gray-200 bg-[var(--surface)] pt-4"
-          aria-hidden="true"
-        >
-          <span
-            className="text-[10px] uppercase tracking-wider text-[var(--muted)] [writing-mode:vertical-rl] rotate-180"
-            title="Panel lateral — próximamente"
-          >
-            Panel
-          </span>
-        </aside>
       </div>
     </div>
   )
