@@ -1,10 +1,15 @@
 import { Navigate } from 'react-router-dom'
 import useAuthStore from '../../shared/stores/useAuthStore'
 import { isAdminRole, normalizeRole } from '../../shared/utils/roles'
+import { isAuthDisabled } from '../../shared/config/devAuth'
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
+
+  if (isAuthDisabled()) {
+    return children
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />

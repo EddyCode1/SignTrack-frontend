@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from '../components/Sidebar'
 import NavbarBlack from '../components/NavbarBlack'
+import { isAuthDisabled } from '../../shared/config/devAuth'
 
 /**
  * Layout principal con Sidebar y NavbarBlack
@@ -15,7 +16,16 @@ const MainLayout = () => {
   }
 
   return (
-    <div className="flex h-screen bg-[var(--bg)]">
+    <div className="flex h-screen bg-[var(--bg)] flex-col">
+      {isAuthDisabled() && (
+        <div
+          className="shrink-0 bg-amber-500 text-black text-center text-sm py-1.5 px-4 font-medium"
+          role="status"
+        >
+          Modo dev: auth desactivado — solo pruebas de UI (VITE_AUTH_DISABLED=true)
+        </div>
+      )}
+      <div className="flex flex-1 min-h-0">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} />
 
@@ -29,6 +39,7 @@ const MainLayout = () => {
           <Outlet />
         </main>
       </div>
+    </div>
     </div>
   )
 }

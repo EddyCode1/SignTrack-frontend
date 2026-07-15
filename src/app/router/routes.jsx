@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { isAuthDisabled } from '../../shared/config/devAuth'
 
 import MainLayout from '../layouts/MainLayout'
 import AuthLayout from '../layouts/AuthLayout'
@@ -14,10 +15,12 @@ import ProfilePage from '../../features/users/pages/ProfilePage'
 
 import ProtectedRoute from './ProtectedRoute'
 
+const homeRedirect = isAuthDisabled() ? '/dashboard' : '/login'
+
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Navigate to="/login" replace />,
+    element: <Navigate to={homeRedirect} replace />,
   },
   {
     path: '/login',
