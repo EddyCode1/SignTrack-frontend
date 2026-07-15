@@ -25,7 +25,7 @@ export const getUsers = async () => {
     ]
   }
   try {
-    const response = await adminClient.get('/users/by-role/USER_ROLE')
+    const response = await adminClient.get('/users')
     return Array.isArray(response.data) ? response.data.map(normalizeUser) : []
   } catch (error) {
     console.error('Error al obtener usuarios:', error)
@@ -38,6 +38,8 @@ export const getProfile = async () => {
     return {
       success: true,
       data: {
+        name: 'Usuario',
+        surname: 'Dev',
         nombre: DEV_MOCK_USER.nombre,
         email: DEV_MOCK_USER.email,
         telefono: '00000000',
@@ -52,6 +54,8 @@ export const getProfile = async () => {
     return {
       success: true,
       data: {
+        name: data.name || '',
+        surname: data.surname || '',
         nombre: `${data.name || ''} ${data.surname || ''}`.trim() || data.username,
         email: data.email || '',
         telefono: data.phone || '',
@@ -65,7 +69,33 @@ export const getProfile = async () => {
 }
 
 export const updateMyProfile = async (payload) => {
+  if (isAuthDisabled()) {
+    return normalizeUser({
+      id: DEV_MOCK_USER.id,
+      name: payload.name || 'Usuario',
+      surname: payload.surname || 'Dev',
+      username: DEV_MOCK_USER.username,
+      email: DEV_MOCK_USER.email,
+      phone: payload.phone || '00000000',
+      role: DEV_MOCK_USER.rol,
+    })
+  }
   const response = await adminClient.put('/users/me', payload)
+  return normalizeUser(response.data)
+}
+
+export const updateUserRole = async (userId, roleName) => {
+  if (isAuthDisabled()) {
+    return normalizeUser({
+      id: userId,
+      name: 'Usuario',
+      surname: 'Dev',
+      username: DEV_MOCK_USER.username,
+      email: DEV_MOCK_USER.email,
+      role: roleName,
+    })
+  }
+  const response = await adminClient.put(`/users/${userId}/role`, { roleName })
   return normalizeUser(response.data)
 }
 
@@ -73,4 +103,5 @@ export default {
   getUsers,
   getProfile,
   updateMyProfile,
+  updateUserRole,
 }
