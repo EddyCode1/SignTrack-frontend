@@ -8,10 +8,12 @@ App React (Vite) para la plataforma Teams inclusiva SignTrack.
 
 ```bash
 git checkout ft/sajche
-pnpm install
+pnpm install:all          # backend (node) + frontend + dotnet restore
 cp .env.example .env.development   # o crear manualmente
 pnpm dev
 ```
+
+`install:all` también funciona desde el repo backend (`SignTrack/`).
 
 ### Todo en uno (backend + frontend)
 

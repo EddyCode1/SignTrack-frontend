@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "install:all": "pnpm --dir ../SignTrack install:all",
     "start:all": "pnpm --dir ../SignTrack start:all",
     "start:backend": "pnpm --dir ../SignTrack start:backend",
     "dev": "vite",
