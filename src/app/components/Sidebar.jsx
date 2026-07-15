@@ -4,9 +4,11 @@ import {
   FiCalendar,
   FiCheckSquare,
   FiHome,
+  FiInbox,
   FiMessageSquare,
   FiPhone,
   FiUser,
+  FiUserPlus,
   FiUsers,
 } from 'react-icons/fi'
 import { isAdminRole } from '../../shared/utils/roles'
@@ -69,6 +71,16 @@ const Sidebar = ({ isOpen = true }) => {
         <NavLink to={APP_ROUTES.dashboardCalendar} className={navLinkClass}>
           <FiCalendar size={17} aria-hidden="true" />
           <span>Calendario</span>
+        </NavLink>
+
+        <NavLink to={APP_ROUTES.dashboardGroups} className={navLinkClass}>
+          <FiUserPlus size={17} aria-hidden="true" />
+          <span>Grupos</span>
+        </NavLink>
+
+        <NavLink to={APP_ROUTES.dashboardRequests} className={navLinkClass}>
+          <FiInbox size={17} aria-hidden="true" />
+          <span>Solicitudes</span>
         </NavLink>
 
         <div className="my-3 border-t border-white/10" />

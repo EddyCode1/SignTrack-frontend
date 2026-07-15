@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { getUsers, updateUserRole } from '../../../shared/api/services/userService'
+import { APP_ROUTES } from '../../../shared/config/paths'
 
 const ROLE_OPTIONS = [
   { value: 'USER_ROLE', label: 'Usuario' },
@@ -55,7 +57,15 @@ const UsersPage = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-bold text-[var(--text)] mb-6">Usuarios</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold text-[var(--text)]">Usuarios</h1>
+        <Link
+          to={APP_ROUTES.dashboardGroups}
+          className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition"
+        >
+          Invitar a grupo
+        </Link>
+      </div>
       <div className="mb-4">
         <input
           type="search"

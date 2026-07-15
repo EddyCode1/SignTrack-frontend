@@ -5,6 +5,8 @@ import { APP_ROUTES } from '../../../shared/config/paths'
 
 const cards = [
   { title: 'Mi Perfil', description: 'Gestiona tu información personal', to: APP_ROUTES.dashboardProfile },
+  { title: 'Grupos', description: 'Crea y administra tus grupos', to: APP_ROUTES.dashboardGroups },
+  { title: 'Solicitudes', description: 'Invitaciones y peticiones pendientes', to: APP_ROUTES.dashboardRequests },
   { title: 'Chats', description: 'Mensajes y conversaciones', to: APP_ROUTES.dashboardChats },
   { title: 'Llamadas', description: 'Historial y llamadas en curso', to: APP_ROUTES.dashboardCalls },
   { title: 'Tareas', description: 'Pendientes y seguimiento', to: APP_ROUTES.dashboardTasks },

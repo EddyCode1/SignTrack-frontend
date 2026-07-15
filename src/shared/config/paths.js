@@ -12,9 +12,15 @@ export const APP_ROUTES = {
   dashboardTasks: '/dashboard/tasks',
   dashboardCalendar: '/dashboard/calendar',
   dashboardUsers: '/dashboard/users',
+  dashboardGroups: '/dashboard/groups',
+  dashboardGroupDetail: '/dashboard/groups/:groupId',
+  dashboardRequests: '/dashboard/requests',
   dashboardProfile: '/dashboard/profile',
   unauthorized: '/unauthorized',
 }
+
+export const buildDashboardGroupDetailPath = (groupId) =>
+  APP_ROUTES.dashboardGroupDetail.replace(':groupId', String(groupId))
 
 /** Ruta absoluta en el navegador (window.location, comparaciones pathname) */
 export const appPath = (route) => `${APP_BASENAME}${route}`
@@ -29,6 +35,8 @@ export const APP_PATHS = {
   dashboardTasks: appPath(APP_ROUTES.dashboardTasks),
   dashboardCalendar: appPath(APP_ROUTES.dashboardCalendar),
   dashboardUsers: appPath(APP_ROUTES.dashboardUsers),
+  dashboardGroups: appPath(APP_ROUTES.dashboardGroups),
+  dashboardRequests: appPath(APP_ROUTES.dashboardRequests),
   dashboardProfile: appPath(APP_ROUTES.dashboardProfile),
   unauthorized: appPath(APP_ROUTES.unauthorized),
 }
