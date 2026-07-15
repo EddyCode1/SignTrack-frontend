@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { authService } from '../../../shared/api/services/authService'
 import toast from 'react-hot-toast'
+import { APP_ROUTES } from '../../../shared/config/paths'
 
 const RegisterPage = () => {
   const [form, setForm] = useState({ name: '', surname: '', username: '', email: '', password: '', phone: '' })
@@ -16,7 +17,7 @@ const RegisterPage = () => {
     const result = await authService.register(form)
     if (result.success) {
       toast.success('Usuario registrado exitosamente')
-      navigate('/login')
+      navigate(APP_ROUTES.login)
     }
     setLoading(false)
   }
@@ -46,7 +47,7 @@ const RegisterPage = () => {
       </form>
       <p className="text-center text-white/60 mt-6">
         ¿Ya tienes cuenta?{' '}
-        <Link to="/login" className="text-white hover:underline">Inicia sesión</Link>
+        <Link to={APP_ROUTES.login} className="text-white hover:underline">Inicia sesión</Link>
       </p>
     </div>
   )

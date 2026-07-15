@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import useAuthStore from '../../shared/stores/useAuthStore'
 import { FiBarChart2, FiHome, FiUser, FiUsers } from 'react-icons/fi'
 import { isAdminRole } from '../../shared/utils/roles'
+import { APP_ROUTES } from '../../shared/config/paths'
 
 const Sidebar = ({ isOpen = true }) => {
   const { logout, user } = useAuthStore()
@@ -9,7 +10,7 @@ const Sidebar = ({ isOpen = true }) => {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate(APP_ROUTES.login)
   }
 
   const isAdmin = isAdminRole(user?.rol)
@@ -31,7 +32,7 @@ const Sidebar = ({ isOpen = true }) => {
 
       <nav className="min-h-0 flex-1 overflow-y-auto px-6 pb-6 space-y-3">
         <Link
-          to="/dashboard"
+          to={APP_ROUTES.dashboard}
           className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
         >
           <FiHome size={17} aria-hidden="true" />
@@ -39,7 +40,7 @@ const Sidebar = ({ isOpen = true }) => {
         </Link>
 
         <Link
-          to="/dashboard/profile"
+          to={APP_ROUTES.dashboardProfile}
           className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
         >
           <FiUser size={17} aria-hidden="true" />
@@ -48,7 +49,7 @@ const Sidebar = ({ isOpen = true }) => {
 
         {isAdmin && (
           <Link
-            to="/dashboard/users"
+            to={APP_ROUTES.dashboardUsers}
             className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-white hover:text-black transition"
           >
             <FiUsers size={17} aria-hidden="true" />

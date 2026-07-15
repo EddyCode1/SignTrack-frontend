@@ -1,5 +1,6 @@
 import axios from 'axios'
 import useAuthStore from '../stores/useAuthStore'
+import { APP_PATHS } from '../config/paths'
 
 const adminClient = axios.create({
   baseURL: import.meta.env.VITE_IDENTITY_URL || '/api/v1',
@@ -27,7 +28,7 @@ adminClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout()
-      window.location.href = '/login'
+      window.location.href = APP_PATHS.login
     }
     return Promise.reject(error)
   }

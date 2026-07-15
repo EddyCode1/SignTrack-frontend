@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom'
+import { APP_ROUTES } from '../../shared/config/paths'
 
 const menuItems = [
-  { id: 1, label: 'Dashboard', path: '/dashboard' },
-  { id: 2, label: 'Mi Perfil', path: '/dashboard/profile' },
+  { id: 1, label: 'Dashboard', path: APP_ROUTES.dashboard },
+  { id: 2, label: 'Mi Perfil', path: APP_ROUTES.dashboardProfile },
 ]
 
 const NAVBAR_TITLE = 'SignTrack'

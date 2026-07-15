@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { authService } from '../../../shared/api/services/authService'
+import { APP_ROUTES } from '../../../shared/config/paths'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -16,7 +17,7 @@ const LoginPage = () => {
     const result = await authService.login(email, password)
     if (result.success) {
       login(result.token, result.user, result.refreshToken)
-      navigate('/dashboard')
+      navigate(APP_ROUTES.dashboard)
     }
     setLoading(false)
   }
@@ -55,7 +56,7 @@ const LoginPage = () => {
       </form>
       <p className="text-center text-white/60 mt-6">
         ¿No tienes cuenta?{' '}
-        <Link to="/register" className="text-white hover:underline">Regístrate</Link>
+        <Link to={APP_ROUTES.register} className="text-white hover:underline">Regístrate</Link>
       </p>
     </div>
   )

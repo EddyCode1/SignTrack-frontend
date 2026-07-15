@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { isAuthDisabled } from '../../shared/config/devAuth'
+import { APP_BASENAME, APP_ROUTES } from '../../shared/config/paths'
 
 import MainLayout from '../layouts/MainLayout'
 import AuthLayout from '../layouts/AuthLayout'
@@ -15,15 +16,16 @@ import ProfilePage from '../../features/users/pages/ProfilePage'
 
 import ProtectedRoute from './ProtectedRoute'
 
-const homeRedirect = isAuthDisabled() ? '/dashboard' : '/login'
+const homeRedirect = isAuthDisabled() ? APP_ROUTES.dashboard : APP_ROUTES.login
 
-const router = createBrowserRouter([
+const router = createBrowserRouter(
+  [
   {
-    path: '/',
+    path: APP_ROUTES.home,
     element: <Navigate to={homeRedirect} replace />,
   },
   {
-    path: '/login',
+    path: APP_ROUTES.login,
     element: (
       <AuthLayout>
         <LoginPage />
@@ -31,7 +33,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/register',
+    path: APP_ROUTES.register,
     element: (
       <AuthLayout>
         <RegisterPage />
@@ -39,7 +41,7 @@ const router = createBrowserRouter([
     ),
   },
   {
-    path: '/dashboard',
+    path: APP_ROUTES.dashboard,
     element: (
       <ProtectedRoute>
         <MainLayout />
@@ -66,7 +68,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: '/unauthorized',
+    path: APP_ROUTES.unauthorized,
     element: <UnauthorizedPage />,
     errorElement: <ErrorBoundary />,
   },
@@ -75,6 +77,8 @@ const router = createBrowserRouter([
     element: <NotFoundPage />,
     errorElement: <ErrorBoundary />,
   },
-])
+  ],
+  { basename: APP_BASENAME || undefined },
+)
 
 export default router

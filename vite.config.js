@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig({
+  base: '/signtrack/',
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -11,8 +12,8 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5173,
-    open: true,
+    port: 5180,
+    open: '/signtrack/',
     proxy: {
       '/api': {
         target: 'http://localhost:5104',

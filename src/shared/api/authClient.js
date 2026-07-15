@@ -1,5 +1,6 @@
 import axios from 'axios'
 import useAuthStore from '../stores/useAuthStore'
+import { APP_PATHS } from '../config/paths'
 
 const authClient = axios.create({
   baseURL: import.meta.env.VITE_AUTH_URL || '/api/v1/auth',
@@ -27,9 +28,9 @@ authClient.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const path = window.location.pathname
-      if (!path.startsWith('/login') && !path.startsWith('/register')) {
+      if (!path.startsWith(APP_PATHS.login) && !path.startsWith(APP_PATHS.register)) {
         useAuthStore.getState().logout()
-        window.location.href = '/login'
+        window.location.href = APP_PATHS.login
       }
     }
     return Promise.reject(error)

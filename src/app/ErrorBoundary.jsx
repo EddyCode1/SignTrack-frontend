@@ -1,4 +1,5 @@
 import { useRouteError } from 'react-router-dom'
+import { APP_PATHS } from '../shared/config/paths'
 
 export function ErrorBoundary() {
   const error = useRouteError()
@@ -16,7 +17,7 @@ export function ErrorBoundary() {
             La ruta "{error?.pathname || 'desconocida'}" no existe. Verifica la dirección e intenta de nuevo.
           </p>
           <a
-            href="/"
+            href={APP_PATHS.home}
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
           >
             Volver al inicio
@@ -36,7 +37,7 @@ export function ErrorBoundary() {
             No tienes permiso para acceder a este recurso.
           </p>
           <a
-            href="/login"
+            href={APP_PATHS.login}
             className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
           >
             Ir a iniciar sesión
@@ -73,7 +74,7 @@ export function ErrorBoundary() {
             Volver atrás
           </button>
           <a
-            href="/"
+            href={APP_PATHS.home}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition"
           >
             Ir al inicio

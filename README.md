@@ -22,9 +22,9 @@ Con ambos repos en la misma carpeta (`SignTrack` y `SignTrack-frontend`):
 pnpm start:all
 ```
 
-Levanta Docker (Postgres/Redis), Identity en `:5104` y Vite en `:5173`.
+Levanta Docker (Postgres/Redis), Identity en `:5104` y Vite en `:5180`.
 
-Abre `http://localhost:5173`. El proxy envía `/api` al backend Identity.
+Abre **`http://localhost:5180/signtrack/`** (prefijo propio para no chocar con otros proyectos en `:5173`). El proxy envía `/api` al backend Identity.
 
 ### Modo rápido (sin login) — temporal
 
@@ -57,11 +57,11 @@ dotnet run
 
 | Ruta | Descripción |
 |------|-------------|
-| `/login` | Inicio de sesión |
-| `/register` | Registro |
-| `/dashboard` | Panel (auth) |
-| `/dashboard/users` | Usuarios (admin) |
-| `/dashboard/profile` | Perfil |
+| `/signtrack/login` | Inicio de sesión |
+| `/signtrack/register` | Registro |
+| `/signtrack/dashboard` | Panel (auth) |
+| `/signtrack/dashboard/users` | Usuarios (admin) |
+| `/signtrack/dashboard/profile` | Perfil |
 
 ## Estructura
 
