@@ -1,5 +1,28 @@
 import authClient from '../authClient'
+import adminClient from '../adminClient'
 import toast from 'react-hot-toast'
+
+const mapUserFromDetails = (ud = {}) => ({
+  id: ud.id || null,
+  _id: ud.id || null,
+  nombre: ud.username || ud.name || '',
+  username: ud.username || '',
+  email: ud.email || '',
+  profilePicture: ud.profilePicture || null,
+  rol: ud.role || 'USER_ROLE',
+})
+
+const mapUserFromResponse = (u = {}) => ({
+  id: u.id,
+  _id: u.id,
+  name: u.name || '',
+  surname: u.surname || '',
+  nombre: u.name || u.username || '',
+  username: u.username || '',
+  email: u.email || '',
+  profilePicture: u.profilePicture || null,
+  rol: u.role || 'USER_ROLE',
+})
 
 export const authService = {
   login: async (emailOrUsername, password) => {
@@ -7,71 +30,68 @@ export const authService = {
       const response = await authClient.post('/login', { emailOrUsername, password })
       const data = response.data
 
-      if (!data.token) {
-        throw new Error('El backend no devolvió un token de autenticación')
+      const token = data.token || data.Token
+      if (!token) {
+        throw new Error(data.message || 'El backend no devolvió un token')
       }
 
-      const ud = data.userDetails || {}
-      const user = {
-        id: ud.id || null,
-        _id: ud.id || null,
-        nombre: ud.username || '',
-        username: ud.username || '',
-        email: ud.email || '',
-        profilePicture: ud.profilePicture || null,
-        rol: ud.role || 'USER_ROLE',
+      let user = mapUserFromDetails(data.userDetails || data.UserDetails)
+
+      if (!user.email) {
+        try {
+          const profileRes = await authClient.get('/profile', {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          const profile = profileRes.data?.data || profileRes.data
+          user = { ...user, ...mapUserFromResponse(profile) }
+        } catch {
+          /* perfil opcional tras login */
+        }
       }
 
-      return {
-        success: true,
-        token: data.token,
-        refreshToken: null,
-        user,
-      }
+      return { success: true, token, refreshToken: null, user }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message || error.message || 'Error al iniciar sesión'
-      )
-      return { success: false, error: error.response?.data?.message || error.message }
+      const msg =
+        error.response?.data?.message ||
+        error.response?.data?.title ||
+        error.message ||
+        'Error al iniciar sesión'
+      toast.error(msg)
+      return { success: false, error: msg }
     }
   },
 
   register: async (userData) => {
     try {
       const formData = new FormData()
-      formData.append('name', userData.name || '')
-      formData.append('surname', userData.surname || '')
-      formData.append('username', userData.username || '')
-      formData.append('email', userData.email || '')
-      formData.append('password', userData.password || '')
-      formData.append('phone', userData.phone || '')
+      formData.append('Name', userData.name || '')
+      formData.append('Surname', userData.surname || '')
+      formData.append('Username', userData.username || '')
+      formData.append('Email', userData.email || '')
+      formData.append('Password', userData.password || '')
+      formData.append('Phone', userData.phone || '')
       if (userData.profilePicture) {
-        formData.append('profilePicture', userData.profilePicture)
+        formData.append('ProfilePicture', userData.profilePicture)
       }
 
-      const response = await authClient.post('/register', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      })
+      const response = await authClient.post('/register', formData)
       return { success: true, user: response.data }
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Error al registrar usuario')
-      return { success: false, error: error.response?.data?.message || error.message }
+      const msg = error.response?.data?.message || 'Error al registrar usuario'
+      toast.error(msg)
+      return { success: false, error: msg }
     }
   },
 
-  getCurrentUser: async (token) => {
+  getCurrentUser: async () => {
     try {
-      const response = await authClient.get('/profile', {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const response = await authClient.get('/profile')
       const data = response.data?.data || response.data
-      return { success: true, user: data }
-    } catch (error) {
+      return { success: true, user: mapUserFromResponse(data) }
+    } catch {
       return { success: false, error: 'Token inválido' }
     }
   },
 
-  logout: () => {
-    return { success: true }
-  },
+  logout: () => ({ success: true }),
 }

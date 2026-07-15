@@ -1,4 +1,4 @@
-import authClient from '../authClient'
+import adminClient from '../adminClient'
 
 const normalizeUser = (user) => ({
   ...user,
@@ -12,7 +12,7 @@ const normalizeUser = (user) => ({
 
 export const getUsers = async () => {
   try {
-    const response = await authClient.get('/by-role/USER_ROLE')
+    const response = await adminClient.get('/users/by-role/USER_ROLE')
     return Array.isArray(response.data) ? response.data.map(normalizeUser) : []
   } catch (error) {
     console.error('Error al obtener usuarios:', error)
@@ -20,73 +20,32 @@ export const getUsers = async () => {
   }
 }
 
-export const createUser = async (userData) => {
+export const getProfile = async () => {
   try {
-    const formData = new FormData()
-    formData.append('name', userData.name || '')
-    formData.append('surname', userData.surname || '')
-    formData.append('username', userData.username || '')
-    formData.append('email', userData.email || '')
-    formData.append('password', userData.password || '')
-    formData.append('phone', userData.phone || '')
-    if (userData.profilePicture) {
-      formData.append('profilePicture', userData.profilePicture)
+    const response = await adminClient.get('/users/me')
+    const data = response.data
+    return {
+      success: true,
+      data: {
+        nombre: `${data.name || ''} ${data.surname || ''}`.trim() || data.username,
+        email: data.email || '',
+        telefono: data.phone || '',
+        rol: data.role || '',
+        profilePicture: data.profilePicture || null,
+      },
     }
-
-    const response = await authClient.post('/register', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
-    const created = response.data?.user || response.data
-    return normalizeUser(created)
-  } catch (error) {
-    console.error('Error al crear usuario:', error)
-    throw error
-  }
-}
-
-export const updateUser = async (id, userData) => {
-  try {
-    const response = await authClient.put(`/users/${id}`, userData)
-    return normalizeUser(response.data?.user || response.data)
-  } catch (error) {
-    console.error('Error al actualizar usuario:', error)
-    throw error
-  }
-}
-
-export const deleteUser = async (id) => {
-  try {
-    const response = await authClient.delete(`/users/${id}`)
-    return response.data
-  } catch (error) {
-    console.error('Error al eliminar usuario:', error)
-    throw error
-  }
-}
-
-export const getProfile = async (token) => {
-  try {
-    const response = await authClient.get('/profile', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-    const data = response.data?.data || response.data
-    const profile = {
-      nombre: data.name || data.username || '',
-      email: data.email || '',
-      telefono: data.phone || '',
-      rol: data.role || '',
-      profilePicture: data.profilePicture || null,
-    }
-    return { success: true, data: profile }
   } catch (error) {
     return { success: false, error: error.response?.data?.message || error.message }
   }
 }
 
+export const updateMyProfile = async (payload) => {
+  const response = await adminClient.put('/users/me', payload)
+  return normalizeUser(response.data)
+}
+
 export default {
   getUsers,
-  createUser,
-  updateUser,
-  deleteUser,
   getProfile,
+  updateMyProfile,
 }

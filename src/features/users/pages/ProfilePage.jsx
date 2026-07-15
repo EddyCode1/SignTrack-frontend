@@ -9,7 +9,7 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const result = await getProfile(token)
+      const result = await getProfile()
       if (result.success) {
         setProfile(result.data)
       }
