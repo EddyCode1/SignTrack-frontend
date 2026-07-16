@@ -94,4 +94,30 @@ export const authService = {
   },
 
   logout: () => ({ success: true }),
+
+  forgotPassword: async (email) => {
+    try {
+      const response = await authClient.post('/forgot-password', { email })
+      const msg = response.data?.message || 'Revisa tu correo si la cuenta existe'
+      toast.success(msg)
+      return { success: true, message: msg }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Error al solicitar recuperación'
+      toast.error(msg)
+      return { success: false, error: msg }
+    }
+  },
+
+  resetPassword: async (token, newPassword) => {
+    try {
+      const response = await authClient.post('/reset-password', { token, newPassword })
+      const msg = response.data?.message || 'Contraseña actualizada'
+      toast.success(msg)
+      return { success: true, message: msg }
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Error al restablecer contraseña'
+      toast.error(msg)
+      return { success: false, error: msg }
+    }
+  },
 }

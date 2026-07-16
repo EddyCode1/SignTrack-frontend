@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   FiBell,
@@ -13,6 +14,12 @@ import { isAdminRole } from '../../../shared/utils/roles'
 import { APP_ROUTES } from '../../../shared/config/paths'
 import PageHeader from '../../../shared/components/PageHeader'
 import AnimatedCard from '../../../shared/components/AnimatedCard'
+import { getInbox } from '../../../shared/api/services/requestService'
+import { getTasks } from '../../../shared/api/services/taskService'
+import { getAppointments } from '../../../shared/api/services/appointmentService'
+import { getGroups } from '../../../shared/api/services/groupService'
+import { getConversations } from '../../../shared/api/services/chatService'
+import { getRooms } from '../../../shared/api/services/callsService'
 
 const cards = [
   {
@@ -21,6 +28,13 @@ const cards = [
     to: APP_ROUTES.dashboardProfile,
     icon: FiUser,
     accent: 'violet',
+  },
+  {
+    title: 'Contactos',
+    description: 'Usuarios y mensajes directos',
+    to: APP_ROUTES.dashboardContacts,
+    icon: FiUsers,
+    accent: 'slate',
   },
   {
     title: 'Grupos',
@@ -70,6 +84,50 @@ const DashboardPage = () => {
   const user = useAuthStore((state) => state.user)
   const isAdmin = isAdminRole(user?.rol)
   const firstName = (user?.nombre || 'Usuario').split(' ')[0]
+  const [stats, setStats] = useState({
+    pendingRequests: 0,
+    openTasks: 0,
+    upcomingAppointments: 0,
+    groups: 0,
+    chats: 0,
+    activeRooms: 0,
+  })
+
+  useEffect(() => {
+    const loadStats = async () => {
+      try {
+        const [inbox, tasks, appointments, groups, chats, rooms] = await Promise.all([
+          getInbox(),
+          getTasks(),
+          getAppointments(),
+          getGroups(),
+          getConversations(),
+          getRooms(),
+        ])
+        const now = new Date()
+        setStats({
+          pendingRequests: inbox.filter((r) => r.status === 'pending').length,
+          openTasks: tasks.filter((t) => t.status !== 'done').length,
+          upcomingAppointments: appointments.filter((a) => new Date(a.startUtc) >= now).length,
+          groups: groups.length,
+          chats: chats.length,
+          activeRooms: rooms.filter((r) => r.status !== 'ended').length,
+        })
+      } catch {
+        /* widgets opcionales */
+      }
+    }
+    loadStats()
+  }, [])
+
+  const statWidgets = [
+    { label: 'Solicitudes pendientes', value: stats.pendingRequests, to: APP_ROUTES.dashboardRequests },
+    { label: 'Tareas abiertas', value: stats.openTasks, to: APP_ROUTES.dashboardTasks },
+    { label: 'Próximas citas', value: stats.upcomingAppointments, to: APP_ROUTES.dashboardCalendar },
+    { label: 'Mis grupos', value: stats.groups, to: APP_ROUTES.dashboardGroups },
+    { label: 'Conversaciones', value: stats.chats, to: APP_ROUTES.dashboardChats },
+    { label: 'Reuniones activas', value: stats.activeRooms, to: APP_ROUTES.dashboardCalls },
+  ]
 
   return (
     <div className="dashboard-page">
@@ -77,6 +135,22 @@ const DashboardPage = () => {
         title={`Hola, ${firstName}`}
         subtitle="Tu espacio de trabajo inclusivo — accede rápido a tus herramientas"
       />
+
+      <section className="dashboard-section">
+        <h2 className="dashboard-section__label">Resumen</h2>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+          {statWidgets.map((widget) => (
+            <Link
+              key={widget.label}
+              to={widget.to}
+              className="card p-4 hover:border-[var(--accent)] transition-colors"
+            >
+              <div className="text-2xl font-bold text-[var(--primary)]">{widget.value}</div>
+              <div className="text-xs text-[var(--muted)] mt-1">{widget.label}</div>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       <section className="dashboard-section">
         <h2 className="dashboard-section__label">Accesos rápidos</h2>
@@ -103,7 +177,7 @@ const DashboardPage = () => {
           <p className="dashboard-banner__eyebrow">SignTrack Teams</p>
           <h3 className="dashboard-banner__title">Comunicación inclusiva para todos</h3>
           <p className="dashboard-banner__text">
-            Próximamente: chat en vivo, videollamadas y traducción de lenguaje de señas en reunión.
+            Grupo A completo en local: chat, reuniones mock, tareas, calendario y contactos.
           </p>
           <Link to={APP_ROUTES.dashboardGroups} className="btn-brand">
             Ver mis grupos

@@ -55,6 +55,12 @@ const LoginPage = () => {
         </button>
       </form>
 
+      <p className="auth-form__footer text-center">
+        <Link to={APP_ROUTES.forgotPassword} className="auth-form__link">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </p>
+
       <p className="auth-form__footer">
         ¿No tienes cuenta?{' '}
         <Link to={APP_ROUTES.register} className="auth-form__link">Regístrate</Link>

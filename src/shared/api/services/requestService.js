@@ -7,6 +7,8 @@ const normalizeRequest = (request) => ({
   status: request.status || 'pending',
   groupId: request.groupId || request.group?.id || null,
   groupName: request.groupName || request.group?.name || '',
+  appointmentId: request.appointmentId || null,
+  appointmentTitle: request.appointmentTitle || '',
   fromUserId: request.fromUserId || request.senderId || request.from?.id || '',
   fromUsername: request.fromUsername || request.from?.username || request.senderName || '',
   toUserId: request.toUserId || request.recipientId || request.to?.id || '',
@@ -36,10 +38,18 @@ export const getInbox = async () => {
 }
 
 export const createRequest = async (payload) => {
+  const body = {
+    toUserId: payload.toUserId || payload.targetUserId,
+    type: payload.type,
+    groupId: payload.groupId,
+    appointmentId: payload.appointmentId,
+    message: payload.message,
+  }
+
   if (isAuthDisabled()) {
     const request = normalizeRequest({
       id: `dev-request-${Date.now()}`,
-      ...payload,
+      ...body,
       fromUserId: DEV_MOCK_USER.id,
       fromUsername: DEV_MOCK_USER.username,
       status: 'pending',
@@ -47,7 +57,7 @@ export const createRequest = async (payload) => {
     devRequests = [request, ...devRequests]
     return request
   }
-  const response = await adminClient.post('/requests', payload)
+  const response = await adminClient.post('/requests', body)
   return normalizeRequest(response.data)
 }
 

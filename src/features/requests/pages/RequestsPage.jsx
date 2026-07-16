@@ -71,6 +71,11 @@ const RequestsPage = () => {
                     Grupo: {request.groupName}
                   </p>
                 )}
+                {request.appointmentTitle && (
+                  <p className="text-sm text-[var(--muted)] mt-1">
+                    Cita: {request.appointmentTitle}
+                  </p>
+                )}
                 {request.fromUsername && (
                   <p className="text-sm text-[var(--muted)] mt-1">
                     De: @{request.fromUsername}

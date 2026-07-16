@@ -12,7 +12,7 @@ const normalizeMember = (member) => ({
 const normalizeGroup = (group) => ({
   id: group.id || group._id,
   name: group.name || '',
-  ownerId: group.ownerId || group.owner?.id || group.owner?._id || '',
+  ownerId: group.ownerId || group.createdByUserId || group.owner?.id || group.owner?._id || '',
   members: Array.isArray(group.members) ? group.members.map(normalizeMember) : [],
   createdAt: group.createdAt || null,
 })

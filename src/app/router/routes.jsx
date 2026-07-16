@@ -8,9 +8,17 @@ import ErrorBoundary from '../ErrorBoundary'
 
 import LoginPage from '../../features/auth/pages/LoginPage'
 import RegisterPage from '../../features/auth/pages/RegisterPage'
+import ForgotPasswordPage from '../../features/auth/pages/ForgotPasswordPage'
+import ResetPasswordPage from '../../features/auth/pages/ResetPasswordPage'
 import NotFoundPage from '../../features/common/pages/NotFoundPage'
 import UnauthorizedPage from '../../features/common/pages/UnauthorizedPage'
-import PlaceholderPage from '../../features/common/pages/PlaceholderPage'
+import ChatsPage from '../../features/chats/pages/ChatsPage'
+import ChatRoomPage from '../../features/chats/pages/ChatRoomPage'
+import CallsPage from '../../features/calls/pages/CallsPage'
+import CallRoomPage from '../../features/calls/pages/CallRoomPage'
+import TasksPage from '../../features/tasks/pages/TasksPage'
+import CalendarPage from '../../features/calendar/pages/CalendarPage'
+import ContactsPage from '../../features/contacts/pages/ContactsPage'
 import DashboardPage from '../../features/dashboard/pages/DashboardPage'
 import UsersPage from '../../features/users/pages/UsersPage'
 import ProfilePage from '../../features/users/pages/ProfilePage'
@@ -50,6 +58,22 @@ const router = createBrowserRouter(
     ),
   },
   {
+    path: APP_ROUTES.forgotPassword,
+    element: (
+      <AuthLayout>
+        <ForgotPasswordPage />
+      </AuthLayout>
+    ),
+  },
+  {
+    path: APP_ROUTES.resetPassword,
+    element: (
+      <AuthLayout>
+        <ResetPasswordPage />
+      </AuthLayout>
+    ),
+  },
+  {
     path: APP_ROUTES.dashboard,
     element: (
       <ProtectedRoute>
@@ -64,19 +88,27 @@ const router = createBrowserRouter(
       },
       {
         path: 'chats',
-        element: <PlaceholderPage title="Chats - próximamente" />,
+        element: <ChatsPage />,
+      },
+      {
+        path: 'chats/:conversationId',
+        element: <ChatRoomPage />,
       },
       {
         path: 'calls',
-        element: <PlaceholderPage title="Llamadas - próximamente" />,
+        element: <CallsPage />,
+      },
+      {
+        path: 'calls/:roomId',
+        element: <CallRoomPage />,
       },
       {
         path: 'tasks',
-        element: <PlaceholderPage title="Tareas - próximamente" />,
+        element: <TasksPage />,
       },
       {
         path: 'calendar',
-        element: <PlaceholderPage title="Calendario - próximamente" />,
+        element: <CalendarPage />,
       },
       {
         path: 'users',
@@ -89,6 +121,10 @@ const router = createBrowserRouter(
       {
         path: 'groups',
         element: <GroupsPage />,
+      },
+      {
+        path: 'contacts',
+        element: <ContactsPage />,
       },
       {
         path: 'groups/:groupId',

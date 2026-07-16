@@ -1,15 +1,19 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { isAdminRole } from '../../../shared/utils/roles'
 import { getUsers } from '../../../shared/api/services/userService'
 import { getGroup, removeGroupMember } from '../../../shared/api/services/groupService'
 import { createRequest } from '../../../shared/api/services/requestService'
+import { createConversation } from '../../../shared/api/services/chatService'
+import GroupTasksPanel from '../../tasks/components/GroupTasksPanel'
+
 import { APP_ROUTES } from '../../../shared/config/paths'
 
 const GroupDetailPage = () => {
   const { groupId } = useParams()
+  const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.user)
   const isAdmin = isAdminRole(currentUser?.rol)
 
@@ -20,6 +24,8 @@ const GroupDetailPage = () => {
   const [manualUserId, setManualUserId] = useState('')
   const [inviting, setInviting] = useState(false)
   const [removingId, setRemovingId] = useState(null)
+  const [openingChat, setOpeningChat] = useState(false)
+  const [activeTab, setActiveTab] = useState('members')
 
   const currentUserId = currentUser?.id || currentUser?._id
   const isOwner = useMemo(
@@ -61,7 +67,7 @@ const GroupDetailPage = () => {
       await createRequest({
         type: 'group_invite',
         groupId,
-        targetUserId,
+        toUserId: targetUserId,
       })
       toast.success('Invitación enviada')
       setSelectedUserId('')
@@ -83,6 +89,18 @@ const GroupDetailPage = () => {
       toast.error(error.response?.data?.message || 'Error al eliminar el miembro')
     } finally {
       setRemovingId(null)
+    }
+  }
+
+  const handleOpenGroupChat = async () => {
+    setOpeningChat(true)
+    try {
+      const chat = await createConversation({ groupId, title: group?.name })
+      navigate(`/dashboard/chats/${chat.id}`)
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'No se pudo abrir el chat del grupo')
+    } finally {
+      setOpeningChat(false)
     }
   }
 
@@ -114,6 +132,45 @@ const GroupDetailPage = () => {
         {isOwner && ' · Eres el propietario'}
       </p>
 
+      <div className="flex flex-wrap gap-3 mb-6">
+        <button
+          type="button"
+          onClick={handleOpenGroupChat}
+          disabled={openingChat}
+          className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white hover:opacity-90 transition disabled:opacity-50"
+        >
+          {openingChat ? 'Abriendo...' : 'Abrir chat del grupo'}
+        </button>
+      </div>
+
+      <div className="flex gap-2 mb-6 border-b border-[var(--accent-soft)]">
+        <button
+          type="button"
+          onClick={() => setActiveTab('members')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+            activeTab === 'members' ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-[var(--muted)]'
+          }`}
+        >
+          Miembros
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('tasks')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
+            activeTab === 'tasks' ? 'border-[var(--primary)] text-[var(--primary)]' : 'border-transparent text-[var(--muted)]'
+          }`}
+        >
+          Tareas
+        </button>
+      </div>
+
+      {activeTab === 'tasks' ? (
+        <div className="card p-4 mb-6">
+          <h2 className="font-semibold text-lg mb-4">Tareas del grupo</h2>
+          <GroupTasksPanel groupId={groupId} members={group.members} />
+        </div>
+      ) : (
+        <>
       <div className="card mb-6">
         <h2 className="font-semibold text-lg mb-4">Invitar usuario</h2>
         <form onSubmit={handleInvite} className="flex flex-wrap gap-3 items-end">
@@ -217,6 +274,8 @@ const GroupDetailPage = () => {
           </tbody>
         </table>
       </div>
+        </>
+      )}
     </div>
   )
 }

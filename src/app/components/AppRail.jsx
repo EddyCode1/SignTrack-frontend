@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
   FiBell,
+  FiBookOpen,
   FiCalendar,
   FiCheckSquare,
   FiHome,
@@ -22,6 +23,7 @@ const mainNav = [
   { to: APP_ROUTES.dashboardChats, icon: FiMessageSquare, label: 'Chats' },
   { to: APP_ROUTES.dashboardCalls, icon: FiPhone, label: 'Llamadas' },
   { to: APP_ROUTES.dashboardGroups, icon: FiUsers, label: 'Grupos' },
+  { to: APP_ROUTES.dashboardContacts, icon: FiBookOpen, label: 'Contactos' },
   { to: APP_ROUTES.dashboardRequests, icon: FiBell, label: 'Solicitudes' },
   { to: APP_ROUTES.dashboardTasks, icon: FiCheckSquare, label: 'Tareas' },
   { to: APP_ROUTES.dashboardCalendar, icon: FiCalendar, label: 'Calendario' },

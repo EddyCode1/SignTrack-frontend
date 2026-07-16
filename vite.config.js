@@ -16,7 +16,7 @@ export default defineConfig({
     open: '/signtrack/',
     proxy: {
       '/api': {
-        target: 'http://localhost:5104',
+        target: 'http://localhost:5050',
         changeOrigin: true,
         secure: false,
       },
