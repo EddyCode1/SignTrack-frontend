@@ -10,13 +10,24 @@ const ChatsPage = () => {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
 
+  const load = async () => {
+    try {
+      setItems(await getConversations())
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'No se pudo cargar los chats')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
-    getConversations()
-      .then(setItems)
-      .catch((err) => {
-        toast.error(err.response?.data?.message || 'No se pudo cargar los chats')
-      })
-      .finally(() => setLoading(false))
+    load()
+  }, [])
+
+  useEffect(() => {
+    const refresh = () => load()
+    window.addEventListener('signtrack:chat-message', refresh)
+    return () => window.removeEventListener('signtrack:chat-message', refresh)
   }, [])
 
   if (loading) return <div className="p-6">Cargando chats...</div>
@@ -36,8 +47,15 @@ const ChatsPage = () => {
                 to={buildChatPath(chat.id)}
                 className="block px-4 py-3 hover:bg-[var(--surface)] transition"
               >
-                <div className="font-medium text-[var(--text)]">
-                  {chat.title || (chat.type === 'group' ? `Grupo ${chat.groupId}` : 'Chat directo')}
+                <div className="flex items-center justify-between gap-2">
+                  <div className="font-medium text-[var(--text)]">
+                    {chat.title || (chat.type === 'group' ? `Grupo ${chat.groupId}` : 'Chat directo')}
+                  </div>
+                  {chat.unreadCount > 0 && (
+                    <span className="text-xs min-w-[1.25rem] text-center px-1.5 py-0.5 rounded-full bg-[var(--primary)] text-white">
+                      {chat.unreadCount > 99 ? '99+' : chat.unreadCount}
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-[var(--muted)] truncate">
                   {chat.lastMessagePreview || 'Sin mensajes'}

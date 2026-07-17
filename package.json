@@ -12,11 +12,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@livekit/components-react": "^2.9.23",
+    "@livekit/components-styles": "^1.2.0",
+    "@microsoft/signalr": "^8.0.7",
     "@tailwindcss/vite": "^4.2.2",
     "axios": "^1.15.0",
     "esbuild": "^0.28.1",
     "jspdf": "^2.5.1",
     "leaflet": "^1.9.4",
+    "livekit-client": "^2.20.1",
     "prop-types": "^15.8.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",

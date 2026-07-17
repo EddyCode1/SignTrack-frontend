@@ -14,3 +14,8 @@ export const linkAppointmentRoom = async (appointmentId, roomId) => {
   const response = await adminClient.post(`/appointments/${appointmentId}/link-room`, { roomId })
   return response.data
 }
+
+export const startAppointmentMeeting = async (appointmentId) => {
+  const response = await adminClient.post(`/appointments/${appointmentId}/start`)
+  return response.data
+}

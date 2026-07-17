@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import {
   FiBell,
   FiBookOpen,
@@ -14,6 +15,11 @@ import {
 import useAuthStore from '../../shared/stores/useAuthStore'
 import { isAdminRole } from '../../shared/utils/roles'
 import { APP_ROUTES } from '../../shared/config/paths'
+import {
+  fetchUnreadTotal,
+  subscribeToPush,
+  updateAppBadge,
+} from '../../shared/api/pushNotificationService'
 
 const railLinkClass = ({ isActive }) =>
   `app-rail__link ${isActive ? 'app-rail__link--active' : ''}`
@@ -30,9 +36,34 @@ const mainNav = [
 ]
 
 const AppRail = ({ mobileOpen, onCloseMobile }) => {
-  const { logout, user } = useAuthStore()
+  const { logout, user, isAuthenticated: authed } = useAuthStore()
   const navigate = useNavigate()
   const isAdmin = isAdminRole(user?.rol)
+  const [unread, setUnread] = useState(0)
+
+  useEffect(() => {
+    if (!authed) return
+
+    const refresh = async () => {
+      try {
+        const total = await fetchUnreadTotal()
+        setUnread(total)
+        await updateAppBadge(total)
+      } catch {
+        /* ignore */
+      }
+    }
+
+    refresh()
+    subscribeToPush().catch(() => {})
+    const pollId = setInterval(refresh, 30000)
+    const onChatMsg = () => refresh()
+    window.addEventListener('signtrack:chat-message', onChatMsg)
+    return () => {
+      clearInterval(pollId)
+      window.removeEventListener('signtrack:chat-message', onChatMsg)
+    }
+  }, [authed])
 
   const handleLogout = () => {
     logout()
@@ -56,7 +87,12 @@ const AppRail = ({ mobileOpen, onCloseMobile }) => {
             title={label}
             onClick={onCloseMobile}
           >
-            <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+            <span className="app-rail__icon-wrap">
+              <Icon size={22} strokeWidth={1.75} aria-hidden="true" />
+              {to === APP_ROUTES.dashboardChats && unread > 0 && (
+                <span className="app-rail__badge">{unread > 99 ? '99+' : unread}</span>
+              )}
+            </span>
             <span className="app-rail__tooltip">{label}</span>
           </NavLink>
         ))}

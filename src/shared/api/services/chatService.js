@@ -21,10 +21,27 @@ export const getMessages = async (conversationId, cursor) => {
   return response.data
 }
 
-export const sendMessage = async (conversationId, content) => {
+export const sendMessage = async (conversationId, content, type = 'text') => {
   const response = await messagingClient.post(`/conversations/${conversationId}/messages`, {
     content,
-    type: 'text',
+    type,
   })
   return response.data
+}
+
+export const sendTranslationMessage = async (conversationId, content) =>
+  sendMessage(conversationId, content, 'translation')
+
+export const getUnreadTotal = async () => {
+  const response = await messagingClient.get('/conversations/unread-total')
+  return response.data?.total ?? 0
+}
+
+export const getCallRoomConversation = async (roomId) => {
+  const response = await messagingClient.post(`/conversations/call-room/${roomId}`)
+  return response.data
+}
+
+export const markConversationRead = async (conversationId) => {
+  await messagingClient.post(`/conversations/${conversationId}/read`)
 }

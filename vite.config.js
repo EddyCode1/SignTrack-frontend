@@ -20,6 +20,17 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      '/hubs': {
+        target: 'http://localhost:5050',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+      },
+      '/recognition-api': {
+        target: 'http://localhost:5050',
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
   build: {

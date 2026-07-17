@@ -4,8 +4,7 @@ import toast from 'react-hot-toast'
 import CalendarGrid from '../components/CalendarGrid'
 import { getContacts } from '../../../shared/api/services/userService'
 import { createRequest } from '../../../shared/api/services/requestService'
-import { createAppointment, getAppointments, linkAppointmentRoom } from '../../../shared/api/services/appointmentService'
-import { createRoom } from '../../../shared/api/services/callsService'
+import { createAppointment, getAppointments, startAppointmentMeeting } from '../../../shared/api/services/appointmentService'
 
 const CalendarPage = () => {
   const navigate = useNavigate()
@@ -122,9 +121,8 @@ const CalendarPage = () => {
 
   const handleStartMeeting = async (appointment) => {
     try {
-      const room = await createRoom({ title: `Cita: ${appointment.title}` })
-      await linkAppointmentRoom(appointment.id, room.id)
-      navigate(`/dashboard/calls/${room.id}`)
+      const updated = await startAppointmentMeeting(appointment.id)
+      navigate(`/dashboard/calls/${updated.roomId}`)
     } catch (err) {
       toast.error(err.response?.data?.message || 'No se pudo iniciar reunión')
     }

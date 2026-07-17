@@ -225,6 +225,27 @@
   transform: translateX(0);
 }
 
+.app-rail__icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.app-rail__badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}
+
 /* ——— Header ——— */
 .app-header {
   display: flex;
@@ -774,4 +795,8 @@
 @keyframes pulseSoft {
   0%, 100% { transform: scale(1); opacity: 0.7; }
   50% { transform: scale(1.08); opacity: 1; }
+}
+
+.mirror-video {
+  transform: scaleX(-1);
 }

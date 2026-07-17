@@ -20,6 +20,11 @@ export const joinRoom = async (roomId, displayName) => {
   return response.data
 }
 
+export const getLiveKitToken = async (roomId) => {
+  const response = await callsClient.post(`/rooms/${roomId}/livekit-token`)
+  return response.data
+}
+
 export const endRoom = async (roomId) => {
   const response = await callsClient.post(`/rooms/${roomId}/end`)
   return response.data

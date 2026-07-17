@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import AppRail from '../components/AppRail'
 import AppHeader from '../components/AppHeader'
+import PresenceProvider from '../providers/PresenceProvider'
 import { isAuthDisabled } from '../../shared/config/devAuth'
 import { APP_ROUTES } from '../../shared/config/paths'
 
@@ -27,6 +28,7 @@ const MainLayout = () => {
     (pathname.includes('/groups/') ? 'Detalle de grupo' : 'SignTrack')
 
   return (
+    <PresenceProvider>
     <div className="app-shell">
       {isAuthDisabled() && (
         <div className="app-dev-banner" role="status">
@@ -54,6 +56,7 @@ const MainLayout = () => {
         </div>
       </div>
     </div>
+    </PresenceProvider>
   )
 }
 

@@ -2,82 +2,136 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
-import { endRoom, getRoom, joinRoom } from '../../../shared/api/services/callsService'
+import { getLiveKitToken, getRoom, joinRoom } from '../../../shared/api/services/callsService'
+import {
+  getCallsHubConnection,
+  joinCallRoomHub,
+  leaveCallRoomHub,
+  onRoomEnded,
+} from '../../../shared/api/callsHubService'
 import { APP_ROUTES } from '../../../shared/config/paths'
+import LiveKitCallRoom from '../components/LiveKitCallRoom'
+import MeshCallRoom from '../components/MeshCallRoom'
 
 const CallRoomPage = () => {
   const { roomId } = useParams()
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
+  const currentUserId = user?.id || user?._id
+
   const [room, setRoom] = useState(null)
   const [loading, setLoading] = useState(true)
-
-  const load = async () => {
-    setLoading(true)
-    try {
-      await joinRoom(roomId, user?.username || user?.nombre || 'Participante')
-      setRoom(await getRoom(roomId))
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'No se pudo entrar a la reunión')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [mediaError, setMediaError] = useState(null)
+  const [liveKit, setLiveKit] = useState(null)
+  const [iceServers, setIceServers] = useState([])
 
   useEffect(() => {
-    load()
-  }, [roomId])
+    let cancelled = false
 
-  const handleEnd = async () => {
-    try {
-      await endRoom(roomId)
-      toast.success('Reunión terminada')
-      navigate(APP_ROUTES.dashboardCalls)
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'No se pudo terminar')
+    const init = async () => {
+      setLoading(true)
+      setMediaError(null)
+
+      try {
+        const joinData = await joinRoom(roomId, user?.username || user?.nombre || 'Participante')
+        const roomData = await getRoom(roomId)
+        if (cancelled) return
+        setRoom(roomData)
+
+        if (joinData.useLiveKit) {
+          try {
+            const lk = await getLiveKitToken(roomId)
+            if (!cancelled) {
+              setLiveKit({
+                token: lk.token,
+                url: lk.url || joinData.liveKitUrl,
+              })
+            }
+            await getCallsHubConnection()
+            if (!cancelled) await joinCallRoomHub(roomId)
+            return
+          } catch (err) {
+            console.warn('LiveKit no disponible, usando WebRTC mesh:', err)
+            toast.error(
+              'LiveKit no disponible — usando videollamada directa (mesh). Para grupos grandes: docker compose up livekit -d',
+              { duration: 5000 },
+            )
+          }
+        }
+
+        setIceServers(
+          (joinData.iceServers || []).map((s) => ({
+            urls: s.urls,
+            username: s.username,
+            credential: s.credential,
+          }))
+        )
+        await getCallsHubConnection()
+        if (!cancelled) await joinCallRoomHub(roomId)
+      } catch (err) {
+        if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
+          setMediaError('Permite acceso a cámara y micrófono para la videollamada.')
+        } else {
+          toast.error(err.response?.data?.message || err.message || 'No se pudo entrar a la reunión')
+        }
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     }
-  }
 
-  const copyLink = () => {
-    const url = `${window.location.origin}/signtrack/dashboard/calls/${roomId}`
-    navigator.clipboard.writeText(url)
-    toast.success('Enlace copiado')
-  }
+    init()
+
+    return () => {
+      cancelled = true
+      leaveCallRoomHub(roomId).catch(() => {})
+    }
+  }, [roomId, user])
+
+  useEffect(() => {
+    const offEnded = onRoomEnded(({ roomId: rid }) => {
+      if (rid !== roomId) return
+      toast('La reunión terminó')
+      navigate(APP_ROUTES.dashboardCalls)
+    })
+    return offEnded
+  }, [roomId, navigate])
 
   if (loading) return <div className="p-6">Entrando a la reunión...</div>
+
+  if (liveKit && room) {
+    return (
+      <LiveKitCallRoom
+        room={room}
+        roomId={roomId}
+        token={liveKit.token}
+        serverUrl={liveKit.url}
+        isHost={room.hostUserId === currentUserId}
+        onLeave={() => navigate(APP_ROUTES.dashboardCalls)}
+      />
+    )
+  }
+
+  if (mediaError) {
+    return (
+      <div className="p-6">
+        <p className="text-red-600 mb-4">{mediaError}</p>
+        <Link to={APP_ROUTES.dashboardCalls} className="text-[var(--accent)] hover:underline">
+          ← Volver a reuniones
+        </Link>
+      </div>
+    )
+  }
+
   if (!room) return <div className="p-6">Reunión no disponible</div>
 
-  const tiles = room.participants?.length ? room.participants : [{ displayName: 'Tú' }]
-
   return (
-    <div className="p-6">
-      <div className="flex flex-wrap items-center gap-3 mb-4">
-        <Link to={APP_ROUTES.dashboardCalls} className="text-[var(--accent)] hover:underline">
-          ← Reuniones
-        </Link>
-        <h1 className="text-xl font-bold flex-1">{room.title}</h1>
-        <button type="button" onClick={copyLink} className="px-3 py-1 rounded border border-[var(--accent-soft)]">
-          Copiar enlace
-        </button>
-        <button type="button" onClick={handleEnd} className="px-3 py-1 rounded bg-red-600 text-white">
-          Terminar
-        </button>
-      </div>
-
-      <p className="text-sm text-[var(--muted)] mb-4">
-        Vista demo (sin video real). Participantes registrados: {room.participantCount}
-      </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tiles.map((p, i) => (
-          <div key={p.userId || i} className="card aspect-video flex flex-col items-center justify-center bg-[var(--surface)]">
-            <div className="w-16 h-16 rounded-full bg-[var(--accent-soft)] mb-3" />
-            <span className="font-medium">{p.displayName || p.userId}</span>
-            <span className="text-xs text-[var(--muted)] mt-1">Cámara mock · Mic mock</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <MeshCallRoom
+      room={room}
+      roomId={roomId}
+      currentUserId={currentUserId}
+      iceServers={iceServers}
+      onLeave={() => navigate(APP_ROUTES.dashboardCalls)}
+    />
   )
 }
 

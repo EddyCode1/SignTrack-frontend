@@ -5,10 +5,12 @@ import { getContacts } from '../../../shared/api/services/userService'
 import { createConversation } from '../../../shared/api/services/chatService'
 import { createRequest } from '../../../shared/api/services/requestService'
 import useAuthStore from '../../../shared/stores/useAuthStore'
+import { useOnlinePresence } from '../../../app/providers/PresenceProvider'
 
 const ContactsPage = () => {
   const navigate = useNavigate()
   const currentUserId = useAuthStore((s) => s.user?.id || s.user?._id)
+  const onlineIds = useOnlinePresence()
   const [contacts, setContacts] = useState([])
   const [query, setQuery] = useState('')
   const [loading, setLoading] = useState(true)
@@ -100,12 +102,20 @@ const ContactsPage = () => {
           ) : (
             filtered.map((contact) => (
               <div key={contact._id} className="p-4 flex flex-wrap items-center gap-3">
-                <div className="flex-1 min-w-[200px]">
+                <div className="flex-1 min-w-[200px] flex items-center gap-2">
+                  <span
+                    className={`inline-block w-2.5 h-2.5 rounded-full shrink-0 ${
+                      onlineIds.has(contact._id) ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                    title={onlineIds.has(contact._id) ? 'En línea' : 'Desconectado'}
+                  />
+                  <div>
                   <div className="font-medium">
                     {contact.name} {contact.surname}
                   </div>
                   <div className="text-sm text-[var(--muted)]">
                     @{contact.username} · {contact.email}
+                  </div>
                   </div>
                 </div>
                 {contact._id !== currentUserId && (
