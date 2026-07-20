@@ -1,6 +1,7 @@
 import { Toaster } from 'react-hot-toast'
 import { RouterProvider } from 'react-router-dom'
 import router from './router/routes'
+import LiveRegion from '../shared/components/LiveRegion'
 
 /**
  * Componente principal de la aplicación
@@ -9,6 +10,7 @@ function App() {
   return (
     <>
       <RouterProvider router={router} />
+      <LiveRegion />
       <Toaster
         position="top-center"
         reverseOrder={false}

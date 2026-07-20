@@ -5,9 +5,14 @@ export const getRooms = async () => {
   return response.data || []
 }
 
-export const createRoom = async ({ title, maxParticipants = 8 }) => {
-  const response = await callsClient.post('/rooms', { title, maxParticipants })
+export const createRoom = async ({ title, maxParticipants = 8, displayName }) => {
+  const response = await callsClient.post('/rooms', { title, maxParticipants, displayName })
   return response.data
+}
+
+export const getRoomHistory = async () => {
+  const response = await callsClient.get('/rooms/history')
+  return response.data || []
 }
 
 export const getRoom = async (roomId) => {

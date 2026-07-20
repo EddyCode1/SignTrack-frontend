@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
-import { predictLetterFromFrame, checkRecognitionHealth } from '../../../shared/api/services/recognitionService'
+import { predictLetterFromFrame, translateSignText, checkRecognitionHealth } from '../../../shared/api/services/recognitionService'
 import { getCallRoomConversation, sendTranslationMessage } from '../../../shared/api/services/chatService'
+import { setSigningStatusHub } from '../../../shared/api/callsHubService'
 
 const CAPTURE_INTERVAL_MS = 700
 const STABLE_FRAMES = 4
+const STABLE_FRAMES_HIGH_CONF = 2
+const HIGH_CONFIDENCE = 0.72
+const MIN_CONFIDENCE = 0.45
 const MIN_APPEND_GAP_MS = 1400
 
 /** Oculta stderr técnico de MediaPipe/Python y deja mensajes legibles. */
@@ -51,6 +55,7 @@ const SignLanguagePanel = ({
   const [conversationId, setConversationId] = useState(conversationIdProp || null)
   const [active, setActive] = useState(false)
   const [recognitionReady, setRecognitionReady] = useState(null)
+  const [hybridEnabled, setHybridEnabled] = useState(false)
   const [lastError, setLastError] = useState('')
   const usesExternalVideo = Boolean(externalVideoRef)
 
@@ -75,11 +80,13 @@ const SignLanguagePanel = ({
 
   const refreshRecognitionHealth = useCallback(async () => {
     try {
-      await checkRecognitionHealth()
+      const health = await checkRecognitionHealth()
       setRecognitionReady(true)
+      setHybridEnabled(Boolean(health?.hybrid_enabled && health?.gemini_configured))
       return true
     } catch {
       setRecognitionReady(false)
+      setHybridEnabled(false)
       return false
     }
   }, [])
@@ -94,6 +101,8 @@ const SignLanguagePanel = ({
   const [loadingCamera, setLoadingCamera] = useState(false)
   const [predicting, setPredicting] = useState(false)
   const [lastLetter, setLastLetter] = useState('')
+  const [lastSource, setLastSource] = useState('')
+  const [lastConfidence, setLastConfidence] = useState(null)
   const [buffer, setBuffer] = useState('')
   const [sending, setSending] = useState(false)
   const [framesSeen, setFramesSeen] = useState(0)
@@ -164,7 +173,24 @@ const SignLanguagePanel = ({
       const letter = String(result.label).trim().toUpperCase()
       if (!letter) return
 
+      const confidence =
+        typeof result.confidence === 'number' && Number.isFinite(result.confidence)
+          ? result.confidence
+          : null
+
+      if (confidence !== null && confidence < MIN_CONFIDENCE) {
+        setLastLetter('—')
+        setLastSource(result.source || '')
+        setLastConfidence(confidence)
+        return
+      }
+
       setLastLetter(letter)
+      setLastSource(result.source || 'local')
+      setLastConfidence(confidence)
+
+      const requiredStable =
+        confidence !== null && confidence >= HIGH_CONFIDENCE ? STABLE_FRAMES_HIGH_CONF : STABLE_FRAMES
 
       if (letter === lastLetterRef.current) {
         stableCountRef.current += 1
@@ -173,7 +199,7 @@ const SignLanguagePanel = ({
         stableCountRef.current = 1
       }
 
-      if (stableCountRef.current >= STABLE_FRAMES) {
+      if (stableCountRef.current >= requiredStable) {
         const now = Date.now()
         if (now - lastAppendedAtRef.current >= MIN_APPEND_GAP_MS) {
           setBuffer((prev) => {
@@ -299,11 +325,16 @@ const SignLanguagePanel = ({
     }
     setSending(true)
     try {
-      const msg = await sendTranslationMessage(conversationId, text)
+      const translated = await translateSignText(text)
+      const finalText = String(translated?.text || text).trim() || text
+      const msg = await sendTranslationMessage(conversationId, finalText)
       setBuffer('')
       setLastLetter('')
+      setLastSource('')
+      setLastConfidence(null)
       lastLetterRef.current = ''
-      toast.success('Seña enviada al chat')
+      const provider = translated?.provider === 'gemini' ? ' (texto mejorado con IA)' : ''
+      toast.success(`Seña enviada al chat${provider}`)
       onMessageSent?.(msg)
     } catch (err) {
       toast.error(err.response?.data?.message || 'Error al enviar traducción')
@@ -313,6 +344,20 @@ const SignLanguagePanel = ({
   }
 
   useEffect(() => () => stopCamera(), [stopCamera])
+
+  // Avisa a los demás participantes de la sala (si esto vive dentro de una llamada)
+  // que el panel de señas está activo, para que muestren un indicador en su tile.
+  useEffect(() => {
+    if (!roomId) return
+    setSigningStatusHub(roomId, active)
+  }, [roomId, active])
+
+  useEffect(() => {
+    if (!roomId) return
+    return () => {
+      setSigningStatusHub(roomId, false)
+    }
+  }, [roomId])
 
   return (
     <div className="card p-4 flex flex-col gap-3 border border-violet-400/30 bg-violet-500/5">
@@ -362,6 +407,11 @@ const SignLanguagePanel = ({
             {predicting ? 'Analizando…' : `Frames ${framesSeen}`}
           </span>
         )}
+        {hybridEnabled && (
+          <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">
+            Híbrido local + Gemini
+          </span>
+        )}
       </div>
 
       {!usesExternalVideo && (
@@ -385,8 +435,9 @@ const SignLanguagePanel = ({
 
       {recognitionReady && (
         <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">
-          Modelo demo activo: detecta letras pero con poca precisión. Para reconocimiento real
-          hace falta el <code className="text-[10px]">sign_model.pkl</code> entrenado del equipo.
+          {hybridEnabled
+            ? 'Modo híbrido: modelo local primero; si la confianza es baja, Gemini revisa el frame. Al enviar, el texto se corrige con IA.'
+            : 'Modelo local activo. Para mejor precisión: entrena con pnpm recognition:letter-train o activa GEMINI_API_KEY + GEMINI_HYBRID_ENABLED.'}
         </p>
       )}
 
@@ -398,6 +449,12 @@ const SignLanguagePanel = ({
         <div className="rounded-lg border border-[var(--accent-soft)] p-2">
           <span className="text-xs text-[var(--muted)] block">Letra detectada</span>
           <span className="text-2xl font-bold text-violet-600">{lastLetter || '—'}</span>
+          {(lastSource || lastConfidence !== null) && (
+            <span className="text-[10px] text-[var(--muted)] block mt-1">
+              {lastSource ? `Fuente: ${lastSource}` : ''}
+              {lastConfidence !== null ? ` · ${Math.round(lastConfidence * 100)}%` : ''}
+            </span>
+          )}
         </div>
         <div className="rounded-lg border border-[var(--accent-soft)] p-2">
           <span className="text-xs text-[var(--muted)] block">Mensaje acumulado</span>

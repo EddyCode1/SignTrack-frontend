@@ -1,12 +1,39 @@
 import * as signalR from '@microsoft/signalr'
 import useAuthStore from '../stores/useAuthStore'
+import { createHubReconnectManager } from './hubReconnectManager'
 
 const HUB_URL = import.meta.env.VITE_CHAT_HUB_URL || '/hubs/chat'
 
 let sharedConnection = null
 let connectionPromise = null
+let presenceJoined = false
+const joinedConversations = new Set()
+
+const reconnectManager = createHubReconnectManager(() => getChatHubConnection())
+export const onChatHubReconnecting = reconnectManager.onReconnecting
+export const onChatHubClosed = reconnectManager.onClosed
 
 const getToken = () => useAuthStore.getState().getToken()
+
+// Los grupos (presencia, conversaciones abiertas) viven en el connectionId viejo:
+// SignalR no los restablece solo al reconectar (ni automático ni manual).
+const rejoinGroups = async () => {
+  if (!sharedConnection) return
+  if (presenceJoined) {
+    try {
+      await sharedConnection.invoke('JoinPresence')
+    } catch {
+      /* se reintentará en el próximo ciclo de reconexión */
+    }
+  }
+  for (const conversationId of joinedConversations) {
+    try {
+      await sharedConnection.invoke('JoinConversation', conversationId)
+    } catch {
+      /* la conversación puede haber dejado de existir */
+    }
+  }
+}
 
 export const getChatHubConnection = async () => {
   if (sharedConnection?.state === signalR.HubConnectionState.Connected) {
@@ -24,6 +51,12 @@ export const getChatHubConnection = async () => {
         .withAutomaticReconnect()
         .configureLogging(signalR.LogLevel.Warning)
         .build()
+
+      reconnectManager.wire(sharedConnection)
+      sharedConnection.onreconnected(() => rejoinGroups())
+      reconnectManager.onClosed((closed) => {
+        if (!closed) rejoinGroups()
+      })
     }
 
     if (sharedConnection.state === signalR.HubConnectionState.Disconnected) {
@@ -43,9 +76,11 @@ export const getChatHubConnection = async () => {
 export const joinConversationHub = async (conversationId) => {
   const hub = await getChatHubConnection()
   await hub.invoke('JoinConversation', conversationId)
+  joinedConversations.add(conversationId)
 }
 
 export const leaveConversationHub = async (conversationId) => {
+  joinedConversations.delete(conversationId)
   if (!sharedConnection || sharedConnection.state !== signalR.HubConnectionState.Connected) return
   try {
     await sharedConnection.invoke('LeaveConversation', conversationId)
@@ -78,6 +113,7 @@ export const onUserTyping = (handler) => {
 export const joinPresenceHub = async () => {
   const hub = await getChatHubConnection()
   await hub.invoke('JoinPresence')
+  presenceJoined = true
 }
 
 export const onUserPresenceChanged = (handler) => {
@@ -90,5 +126,7 @@ export const disconnectChatHub = async () => {
   if (sharedConnection) {
     await sharedConnection.stop()
     sharedConnection = null
+    presenceJoined = false
+    joinedConversations.clear()
   }
 }

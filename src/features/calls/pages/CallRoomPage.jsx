@@ -12,6 +12,7 @@ import {
 import { APP_ROUTES } from '../../../shared/config/paths'
 import LiveKitCallRoom from '../components/LiveKitCallRoom'
 import MeshCallRoom from '../components/MeshCallRoom'
+import useLiveRegionStore from '../../../shared/stores/useLiveRegionStore'
 
 const CallRoomPage = () => {
   const { roomId } = useParams()
@@ -91,6 +92,7 @@ const CallRoomPage = () => {
     const offEnded = onRoomEnded(({ roomId: rid }) => {
       if (rid !== roomId) return
       toast('La reunión terminó')
+      useLiveRegionStore.getState().announce('La reunión terminó', { flash: true })
       navigate(APP_ROUTES.dashboardCalls)
     })
     return offEnded

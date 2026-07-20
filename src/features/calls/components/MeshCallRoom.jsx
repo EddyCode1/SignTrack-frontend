@@ -10,18 +10,21 @@ import {
   onExistingParticipants,
   onParticipantJoined,
   onParticipantLeft,
+  onExistingSigningStatuses,
   onReceiveAnswer,
   onReceiveIceCandidate,
   onReceiveOffer,
+  onSigningStatusChanged,
   sendAnswerHub,
   sendIceCandidateHub,
   sendOfferHub,
 } from '../../../shared/api/callsHubService'
 import { APP_ROUTES } from '../../../shared/config/paths'
 import CallSideChat from './CallSideChat'
+import InviteToCallPanel from './InviteToCallPanel'
 import SignLanguagePanel from '../../chats/components/SignLanguagePanel'
 
-const RemoteVideoTile = ({ stream, label }) => {
+const RemoteVideoTile = ({ stream, label, isSigning }) => {
   const videoRef = useRef(null)
 
   useEffect(() => {
@@ -36,6 +39,11 @@ const RemoteVideoTile = ({ stream, label }) => {
       <span className="absolute bottom-2 left-2 text-xs bg-black/60 text-white px-2 py-1 rounded">
         {label}
       </span>
+      {isSigning && (
+        <span className="absolute top-2 left-2 text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
+          Firmando
+        </span>
+      )}
     </div>
   )
 }
@@ -54,6 +62,7 @@ const MeshCallRoom = ({
   const [remoteStreams, setRemoteStreams] = useState({})
   const [sideChatOpen, setSideChatOpen] = useState(true)
   const [callConversationId, setCallConversationId] = useState(null)
+  const [signingUsers, setSigningUsers] = useState({})
 
   const localVideoRef = useRef(null)
   const localStreamRef = useRef(null)
@@ -261,6 +270,22 @@ const MeshCallRoom = ({
     const offAnswer = onReceiveAnswer(handleRemoteAnswer)
     const offIce = onReceiveIceCandidate(handleRemoteIce)
 
+    const offSigning = onSigningStatusChanged(({ roomId: rid, userId, isSigning }) => {
+      if (rid !== roomId) return
+      setSigningUsers((prev) => ({ ...prev, [userId]: isSigning }))
+    })
+
+    const offExistingSigning = onExistingSigningStatuses(({ roomId: rid, userIds }) => {
+      if (rid !== roomId) return
+      setSigningUsers((prev) => {
+        const next = { ...prev }
+        userIds.forEach((userId) => {
+          next[userId] = true
+        })
+        return next
+      })
+    })
+
     return () => {
       offReconnect()
       offExisting()
@@ -269,6 +294,8 @@ const MeshCallRoom = ({
       offOffer()
       offAnswer()
       offIce()
+      offSigning()
+      offExistingSigning()
     }
   }, [
     roomId,
@@ -355,6 +382,7 @@ const MeshCallRoom = ({
         <button type="button" onClick={handleLeave} className="px-3 py-1 rounded border border-[var(--accent-soft)]">
           Salir
         </button>
+        {isHost && <InviteToCallPanel roomId={roomId} />}
         {isHost && (
           <button type="button" onClick={handleEnd} className="px-3 py-1 rounded bg-red-600 text-white">
             Terminar
@@ -389,6 +417,7 @@ const MeshCallRoom = ({
                 key={userId}
                 stream={stream}
                 label={participant?.displayName || userId}
+                isSigning={Boolean(signingUsers[userId])}
               />
             )
           })}
@@ -409,6 +438,7 @@ const MeshCallRoom = ({
             {callConversationId ? (
               <SignLanguagePanel
                 conversationId={callConversationId}
+                roomId={roomId}
                 externalVideoRef={localVideoRef}
                 autoStart={false}
               />

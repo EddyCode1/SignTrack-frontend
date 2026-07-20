@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import CalendarGrid from '../components/CalendarGrid'
-import { getContacts } from '../../../shared/api/services/userService'
+import { getDirectory } from '../../../shared/api/services/userService'
 import { createRequest } from '../../../shared/api/services/requestService'
 import { createAppointment, getAppointments, startAppointmentMeeting } from '../../../shared/api/services/appointmentService'
 
@@ -30,7 +30,7 @@ const CalendarPage = () => {
     try {
       const [appointments, directory] = await Promise.all([
         getAppointments(),
-        getContacts(''),
+        getDirectory(''),
       ])
       setItems(appointments)
       setContacts(directory)

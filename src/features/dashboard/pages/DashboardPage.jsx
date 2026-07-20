@@ -177,7 +177,7 @@ const DashboardPage = () => {
           <p className="dashboard-banner__eyebrow">SignTrack Teams</p>
           <h3 className="dashboard-banner__title">Comunicación inclusiva para todos</h3>
           <p className="dashboard-banner__text">
-            Grupo A completo en local: chat, reuniones mock, tareas, calendario y contactos.
+            Chat, videollamadas, tareas, calendario y contactos en un solo lugar.
           </p>
           <Link to={APP_ROUTES.dashboardGroups} className="btn-brand">
             Ver mis grupos

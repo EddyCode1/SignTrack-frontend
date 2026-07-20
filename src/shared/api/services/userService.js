@@ -52,6 +52,25 @@ export const getContacts = async (query = '') => {
   return Array.isArray(response.data) ? response.data.map(normalizeUser) : []
 }
 
+export const getDirectory = async (query = '') => {
+  if (isAuthDisabled()) {
+    return [
+      normalizeUser({
+        id: 'other-user',
+        name: 'Colaborador',
+        surname: 'Demo',
+        username: 'colaborador',
+        email: 'colab@demo.com',
+        role: 'USER_ROLE',
+      }),
+    ]
+  }
+  const response = await adminClient.get('/users/directory', {
+    params: query ? { q: query } : {},
+  })
+  return Array.isArray(response.data) ? response.data.map(normalizeUser) : []
+}
+
 export const getProfile = async () => {
   if (isAuthDisabled()) {
     return {
@@ -121,6 +140,7 @@ export const updateUserRole = async (userId, roleName) => {
 export default {
   getUsers,
   getContacts,
+  getDirectory,
   getProfile,
   updateMyProfile,
   updateUserRole,

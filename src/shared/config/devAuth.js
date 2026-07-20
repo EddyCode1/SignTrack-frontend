@@ -3,7 +3,7 @@
  * Solo activo cuando VITE_AUTH_DISABLED=true (nunca en producción).
  */
 export const isAuthDisabled = () =>
-  import.meta.env.VITE_AUTH_DISABLED === 'true'
+  !import.meta.env.PROD && import.meta.env.VITE_AUTH_DISABLED === 'true'
 
 export const DEV_MOCK_TOKEN = 'dev-bypass-no-backend'
 

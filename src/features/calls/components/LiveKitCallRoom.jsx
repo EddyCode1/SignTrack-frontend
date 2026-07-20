@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -7,9 +7,14 @@ import {
 } from '@livekit/components-react'
 import toast from 'react-hot-toast'
 import { endRoom } from '../../../shared/api/services/callsService'
+import {
+  onExistingSigningStatuses,
+  onSigningStatusChanged,
+} from '../../../shared/api/callsHubService'
 import { APP_ROUTES } from '../../../shared/config/paths'
 import CallSideChat from './CallSideChat'
 import CallTranslationOverlay from './CallTranslationOverlay'
+import InviteToCallPanel from './InviteToCallPanel'
 import SignLanguagePanel from '../../chats/components/SignLanguagePanel'
 
 const LiveKitCallRoom = ({
@@ -22,6 +27,41 @@ const LiveKitCallRoom = ({
 }) => {
   const [chatOpen, setChatOpen] = useState(true)
   const [conversationId, setConversationId] = useState(null)
+  const [signingUsers, setSigningUsers] = useState({})
+
+  // CallRoomPage ya conectó el hub de Calls y llamó joinCallRoomHub(roomId) antes de
+  // montar este componente (camino LiveKit) — no lo repetimos aquí para no duplicar
+  // el join/leave (y con él, ParticipantJoined/Left) ya manejado en CallRoomPage.
+  // Solo escuchamos el evento aditivo de "alguien activó el panel de señas".
+  useEffect(() => {
+    const offSigning = onSigningStatusChanged(({ roomId: rid, userId, isSigning }) => {
+      if (rid !== roomId) return
+      setSigningUsers((prev) => ({ ...prev, [userId]: isSigning }))
+    })
+
+    const offExisting = onExistingSigningStatuses(({ roomId: rid, userIds }) => {
+      if (rid !== roomId) return
+      setSigningUsers((prev) => {
+        const next = { ...prev }
+        userIds.forEach((userId) => {
+          next[userId] = true
+        })
+        return next
+      })
+    })
+
+    return () => {
+      offSigning()
+      offExisting()
+    }
+  }, [roomId])
+
+  const getSignerName = (userId) =>
+    room.participants?.find((p) => p.userId === userId)?.displayName || userId
+
+  const signingNames = Object.entries(signingUsers)
+    .filter(([, isSigning]) => isSigning)
+    .map(([userId]) => userId)
 
   const handleEnd = async () => {
     try {
@@ -62,6 +102,7 @@ const LiveKitCallRoom = ({
         <button type="button" onClick={onLeave} className="px-3 py-1 rounded border border-[var(--accent-soft)]">
           Salir
         </button>
+        {isHost && <InviteToCallPanel roomId={roomId} />}
         {isHost && (
           <button type="button" onClick={handleEnd} className="px-3 py-1 rounded bg-red-600 text-white">
             Terminar
@@ -85,6 +126,18 @@ const LiveKitCallRoom = ({
             <RoomAudioRenderer />
           </LiveKitRoom>
           <CallTranslationOverlay conversationId={conversationId} />
+          {signingNames.length > 0 && (
+            <div className="absolute top-3 left-3 flex flex-col gap-1 z-10">
+              {signingNames.map((userId) => (
+                <span
+                  key={userId}
+                  className="text-xs bg-violet-600 text-white px-2 py-1 rounded-full shadow-md"
+                >
+                  {getSignerName(userId)} está firmando
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {chatOpen && (
@@ -93,7 +146,7 @@ const LiveKitCallRoom = ({
               <CallSideChat roomId={roomId} onConversationReady={setConversationId} />
             </div>
             {conversationId ? (
-              <SignLanguagePanel conversationId={conversationId} autoStart={false} />
+              <SignLanguagePanel conversationId={conversationId} roomId={roomId} autoStart={false} />
             ) : (
               <div className="card p-4 text-xs text-[var(--muted)]">Esperando chat de reunión…</div>
             )}

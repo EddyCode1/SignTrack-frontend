@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom'
 import AppRail from '../components/AppRail'
 import AppHeader from '../components/AppHeader'
 import PresenceProvider from '../providers/PresenceProvider'
+import CallInviteProvider from '../providers/CallInviteProvider'
+import ConnectionBanner from '../../shared/components/ConnectionBanner'
 import { isAuthDisabled } from '../../shared/config/devAuth'
 import { APP_ROUTES } from '../../shared/config/paths'
 
@@ -29,12 +31,14 @@ const MainLayout = () => {
 
   return (
     <PresenceProvider>
+    <CallInviteProvider>
     <div className="app-shell">
       {isAuthDisabled() && (
         <div className="app-dev-banner" role="status">
           Modo dev: auth desactivado — solo pruebas de UI
         </div>
       )}
+      <ConnectionBanner />
 
       <div className="app-shell__body">
         <AppRail
@@ -56,6 +60,7 @@ const MainLayout = () => {
         </div>
       </div>
     </div>
+    </CallInviteProvider>
     </PresenceProvider>
   )
 }
