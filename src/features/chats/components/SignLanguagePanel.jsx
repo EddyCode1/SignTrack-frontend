@@ -232,6 +232,64 @@ const SignLanguagePanel = ({
     }
   }, [])
 
+  const startCamera = useCallback(async () => {
+    if (active || startingCameraRef.current) return
+    if (!conversationId) {
+      toast.error('Esperando conversación…')
+      return
+    }
+    if (recognitionReady !== true) {
+      const ok = await refreshRecognitionHealth()
+      if (!ok) {
+        toast.error('Servicio Recognition offline. Ejecuta pnpm setup:recognition y reinicia.')
+        return
+      }
+    }
+    startingCameraRef.current = true
+    userStoppedRef.current = false
+    setLoadingCamera(true)
+    errorShownRef.current = false
+    setLastError('')
+    setFramesSeen(0)
+    try {
+      if (usesExternalVideo) {
+        const video = getVideoElement()
+        if (!video || video.readyState < 2) {
+          toast.error('La cámara de la llamada aún no está lista')
+          return
+        }
+        setActive(true)
+        intervalRef.current = setInterval(processFrame, CAPTURE_INTERVAL_MS)
+        return
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+        audio: false,
+      })
+      streamRef.current = stream
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+        await videoRef.current.play()
+      }
+      setActive(true)
+      intervalRef.current = setInterval(processFrame, CAPTURE_INTERVAL_MS)
+    } catch (err) {
+      const name = err?.name || ''
+      if (name === 'NotAllowedError') {
+        toast.error('Permiso de cámara denegado')
+      } else if (name === 'NotReadableError' || name === 'TrackStartError') {
+        toast.error('La cámara está en uso por otra pestaña o app')
+      } else {
+        toast.error('No se pudo acceder a la cámara')
+      }
+      console.error(err)
+    } finally {
+      startingCameraRef.current = false
+      setLoadingCamera(false)
+    }
+  }, [active, conversationId, recognitionReady, usesExternalVideo, processFrame, refreshRecognitionHealth])
+
   useEffect(() => {
     if (!autoStart || autoStartedRef.current || active || userStoppedRef.current) return
     if (!conversationId || recognitionReady !== true) return

@@ -16,5 +16,4 @@ import { speakTranslation } from '../../../shared/utils/speakTranslation'
 import { APP_ROUTES } from '../../../shared/config/paths'
 
 
-
 export default ChatRoomPage
