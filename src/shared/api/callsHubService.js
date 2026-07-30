@@ -66,6 +66,23 @@ export const getCallsHubConnection = async () => {
   }
 }
 
+// Fuerza una reconexión limpia con el token actual. Necesario cuando cambia el
+// usuario autenticado (login/logout) sin recargar la página: sin esto, la conexión
+// compartida sigue autenticada como el usuario anterior.
+export const stopCallsHubConnection = async () => {
+  joinedRooms.clear()
+  const toStop = sharedConnection
+  sharedConnection = null
+  connectionPromise = null
+  if (toStop) {
+    try {
+      await toStop.stop()
+    } catch {
+      /* ya pudo estar cerrada */
+    }
+  }
+}
+
 export const joinCallRoomHub = async (roomId) => {
   const hub = await getCallsHubConnection()
   await hub.invoke('JoinCallRoom', roomId)

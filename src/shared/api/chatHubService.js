@@ -123,10 +123,16 @@ export const onUserPresenceChanged = (handler) => {
 }
 
 export const disconnectChatHub = async () => {
-  if (sharedConnection) {
-    await sharedConnection.stop()
-    sharedConnection = null
-    presenceJoined = false
-    joinedConversations.clear()
+  const toStop = sharedConnection
+  sharedConnection = null
+  connectionPromise = null
+  presenceJoined = false
+  joinedConversations.clear()
+  if (toStop) {
+    try {
+      await toStop.stop()
+    } catch {
+      /* ya pudo estar cerrada */
+    }
   }
 }

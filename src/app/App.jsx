@@ -2,6 +2,7 @@ import { Toaster } from 'react-hot-toast'
 import { RouterProvider } from 'react-router-dom'
 import router from './router/routes'
 import LiveRegion from '../shared/components/LiveRegion'
+import '../shared/api/hubAuthSync'
 
 /**
  * Componente principal de la aplicación
