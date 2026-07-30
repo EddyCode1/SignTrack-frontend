@@ -13,7 +13,7 @@ export function ErrorBoundary() {
           <h1 className="text-6xl font-bold text-white mb-4">404</h1>
           <p className="text-2xl text-slate-300 mb-4">Página no encontrada</p>
           <p className="text-slate-400 mb-8 max-w-md">
-            La ruta "{error?.pathname || 'desconocida'}" no existe. Verifica la dirección e intenta de nuevo.
+            La ruta &quot;{error?.pathname || 'desconocida'}&quot; no existe. Verifica la dirección e intenta de nuevo.
           </p>
           <a
             href="/"
