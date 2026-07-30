@@ -459,8 +459,8 @@ const MeshCallRoom = ({
         </div>
 
         {sideChatOpen && (
-          <div className="w-full lg:w-96 shrink-0 flex flex-col gap-4 min-h-[320px]">
-            <div className="min-h-[200px] flex-1">
+          <div className="w-full lg:w-[30rem] shrink-0 flex flex-col gap-4 min-h-[480px]">
+            <div className="min-h-[160px] max-h-[280px] flex flex-col">
               <CallSideChat roomId={roomId} onConversationReady={setCallConversationId} />
             </div>
             {callConversationId ? (
