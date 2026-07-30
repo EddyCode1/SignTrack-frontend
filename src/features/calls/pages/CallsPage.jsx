@@ -29,7 +29,7 @@ const CallsPage = () => {
   const [history, setHistory] = useState([])
   const [tab, setTab] = useState('active')
   const [title, setTitle] = useState('')
-  const [maxParticipants, setMaxParticipants] = useState(8)
+  const maxParticipants = 2
   const [loading, setLoading] = useState(true)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -70,7 +70,10 @@ const CallsPage = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault()
-    if (!title.trim()) return
+    if (!title.trim()) {
+      toast.error('Escribe un título para la reunión')
+      return
+    }
     setCreating(true)
     try {
       const room = await createRoom({
@@ -107,14 +110,9 @@ const CallsPage = () => {
         </div>
         <div>
           <label className="block text-sm mb-1">Tipo</label>
-          <select
-            value={maxParticipants}
-            onChange={(e) => setMaxParticipants(Number(e.target.value))}
-            className="px-4 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)]"
-          >
-            <option value={2}>1:1 (WebRTC)</option>
-            <option value={8}>Grupo (LiveKit, hasta 8)</option>
-          </select>
+          <div className="px-4 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-sm">
+            1:1 (WebRTC)
+          </div>
         </div>
         <button type="submit" disabled={creating} className="btn-brand px-4 py-2">
           {creating ? 'Creando...' : 'Crear reunión'}

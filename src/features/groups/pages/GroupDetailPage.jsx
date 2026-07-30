@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import useAuthStore from '../../../shared/stores/useAuthStore'
 import { isAdminRole } from '../../../shared/utils/roles'
-import { getUsers } from '../../../shared/api/services/userService'
+import { getUsers, getContacts } from '../../../shared/api/services/userService'
 import { getGroup, removeGroupMember } from '../../../shared/api/services/groupService'
 import { createRequest } from '../../../shared/api/services/requestService'
 import { createConversation } from '../../../shared/api/services/chatService'
@@ -19,6 +19,7 @@ const GroupDetailPage = () => {
 
   const [group, setGroup] = useState(null)
   const [users, setUsers] = useState([])
+  const [contacts, setContacts] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedUserId, setSelectedUserId] = useState('')
   const [manualUserId, setManualUserId] = useState('')
@@ -54,9 +55,14 @@ const GroupDetailPage = () => {
     getUsers().then(setUsers).catch(() => setUsers([]))
   }, [isAdmin])
 
+  useEffect(() => {
+    if (isAdmin) return
+    getContacts().then(setContacts).catch(() => setContacts([]))
+  }, [isAdmin])
+
   const handleInvite = async (e) => {
     e.preventDefault()
-    const targetUserId = (isAdmin ? selectedUserId : manualUserId).trim()
+    const targetUserId = (selectedUserId || manualUserId).trim()
     if (!targetUserId) {
       toast.error('Selecciona o ingresa un usuario')
       return
@@ -197,19 +203,48 @@ const GroupDetailPage = () => {
               </select>
             </div>
           ) : (
-            <div className="flex-1 min-w-[200px]">
-              <label htmlFor="userIdInput" className="block text-sm font-medium mb-2">
-                ID de usuario
-              </label>
-              <input
-                id="userIdInput"
-                type="text"
-                value={manualUserId}
-                onChange={(e) => setManualUserId(e.target.value)}
-                placeholder="ID o nombre de usuario"
-                className="w-full px-4 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
-                disabled={inviting}
-              />
+            <div className="flex-1 min-w-[200px] flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-[180px]">
+                <label htmlFor="contactSelect" className="block text-sm font-medium mb-2">
+                  Tu contacto
+                </label>
+                <select
+                  id="contactSelect"
+                  value={selectedUserId}
+                  onChange={(e) => {
+                    setSelectedUserId(e.target.value)
+                    if (e.target.value) setManualUserId('')
+                  }}
+                  className="w-full px-4 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
+                  disabled={inviting}
+                >
+                  <option value="">Seleccionar contacto...</option>
+                  {contacts
+                    .filter((u) => !group.members.some((m) => m.userId === u._id))
+                    .map((user) => (
+                      <option key={user._id} value={user._id}>
+                        {user.name} {user.surname} (@{user.username})
+                      </option>
+                    ))}
+                </select>
+              </div>
+              <div className="flex-1 min-w-[180px]">
+                <label htmlFor="userIdInput" className="block text-sm font-medium mb-2">
+                  O escribe un ID/usuario
+                </label>
+                <input
+                  id="userIdInput"
+                  type="text"
+                  value={manualUserId}
+                  onChange={(e) => {
+                    setManualUserId(e.target.value)
+                    if (e.target.value) setSelectedUserId('')
+                  }}
+                  placeholder="ID o nombre de usuario"
+                  className="w-full px-4 py-2 rounded-lg border border-[var(--accent-soft)] bg-[var(--surface)] text-[var(--text)] focus:outline-none focus:border-[var(--accent)]"
+                  disabled={inviting}
+                />
+              </div>
             </div>
           )}
           <button

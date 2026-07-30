@@ -87,7 +87,18 @@ const CalendarPage = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault()
-    if (!title.trim() || !start || !end) return
+    if (!title.trim()) {
+      toast.error('Escribe un título para la cita')
+      return
+    }
+    if (!start || !end) {
+      toast.error('Selecciona fecha y hora de inicio y fin')
+      return
+    }
+    if (new Date(end) <= new Date(start)) {
+      toast.error('La hora de fin debe ser después de la hora de inicio')
+      return
+    }
     try {
       const appointment = await createAppointment({
         title: title.trim(),

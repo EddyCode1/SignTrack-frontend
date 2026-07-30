@@ -215,7 +215,26 @@ const MeshCallRoom = ({
 
     const initMediaAndHub = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        let stream
+        let noCameraDetected = false
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        } catch (mediaErr) {
+          const devices = await navigator.mediaDevices.enumerateDevices().catch(() => [])
+          const hasCamera = devices.some((d) => d.kind === 'videoinput')
+
+          if (!hasCamera) {
+            noCameraDetected = true
+            stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true })
+          } else if (mediaErr.name === 'OverconstrainedError' || mediaErr.name === 'ConstraintNotSatisfiedError') {
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { width: { ideal: 320 }, height: { ideal: 240 } },
+              audio: true,
+            })
+          } else {
+            throw mediaErr
+          }
+        }
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop())
           return
@@ -225,14 +244,23 @@ const MeshCallRoom = ({
         if (localVideoRef.current) {
           localVideoRef.current.srcObject = stream
         }
+        if (noCameraDetected) {
+          toast('No se detectó cámara en este dispositivo — entrando solo con audio.', { icon: '🎙️' })
+        }
 
         await getCallsHubConnection()
         if (cancelled) return
         await joinCallRoomHub(roomId)
         if (!cancelled) setHubReady(true)
       } catch (err) {
-        if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
+        if (err.name === 'NotAllowedError') {
           toast.error('Permite acceso a cámara y micrófono para la videollamada.')
+        } else if (err.name === 'NotFoundError') {
+          toast.error('No se encontró cámara o micrófono en este dispositivo.')
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+          toast.error('La cámara está en uso por otra pestaña o aplicación.')
+        } else if (err.name) {
+          toast.error(`No se pudo acceder a la cámara/micrófono (${err.name}: ${err.message})`)
         } else {
           toast.error(err.response?.data?.message || err.message || 'No se pudo iniciar la llamada')
         }
