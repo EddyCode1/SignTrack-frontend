@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import useAuthStore from '../../shared/stores/useAuthStore'
 import { isAdminRole, normalizeRole } from '../../shared/utils/roles'
 
@@ -27,6 +28,11 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   return children
+}
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired,
+  requiredRole: PropTypes.oneOfType([PropTypes.string, PropTypes.arrayOf(PropTypes.string)]),
 }
 
 export default ProtectedRoute
