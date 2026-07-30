@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types'
 import useAuthStore from '../../shared/stores/useAuthStore'
 
 /**
@@ -27,6 +28,11 @@ const Navbar = ({ isSidebarOpen = true, onToggleSidebar }) => {
       </div>
     </header>
   )
+}
+
+Navbar.propTypes = {
+  isSidebarOpen: PropTypes.bool,
+  onToggleSidebar: PropTypes.func.isRequired,
 }
 
 export default Navbar

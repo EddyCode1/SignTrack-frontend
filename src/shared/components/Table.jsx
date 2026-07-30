@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const Table = ({ columns, data, onEdit, onDelete, actionLabels = {}, accent = false }) => {
   const editLabel = actionLabels.edit || 'Editar'
   const deleteLabel = actionLabels.delete || 'Eliminar'
@@ -54,6 +56,23 @@ const Table = ({ columns, data, onEdit, onDelete, actionLabels = {}, accent = fa
       </tbody>
     </table>
   )
+}
+
+Table.propTypes = {
+  columns: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      label: PropTypes.node,
+    })
+  ).isRequired,
+  data: PropTypes.array,
+  onEdit: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  actionLabels: PropTypes.shape({
+    edit: PropTypes.string,
+    delete: PropTypes.string,
+  }),
+  accent: PropTypes.bool,
 }
 
 export default Table

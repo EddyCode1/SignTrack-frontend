@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
+import PropTypes from 'prop-types'
 import useAuthStore from '../../shared/stores/useAuthStore'
-import { FiBarChart2, FiHome, FiUser, FiUsers } from 'react-icons/fi'
+import { FiHome, FiUser, FiUsers } from 'react-icons/fi'
 import { isAdminRole } from '../../shared/utils/roles'
 
 const Sidebar = ({ isOpen = true }) => {
@@ -71,6 +72,10 @@ const Sidebar = ({ isOpen = true }) => {
       </div>
     </aside>
   )
+}
+
+Sidebar.propTypes = {
+  isOpen: PropTypes.bool,
 }
 
 export default Sidebar

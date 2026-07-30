@@ -51,7 +51,7 @@ authClient.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${response.data.token}`
           return authClient(originalRequest)
         }
-      } catch (refreshError) {
+      } catch {
         useAuthStore.getState().logout()
         window.location.href = '/login'
       }

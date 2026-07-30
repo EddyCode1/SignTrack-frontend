@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null
 
@@ -20,6 +22,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       </div>
     </div>
   )
+}
+
+Modal.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  title: PropTypes.node,
+  children: PropTypes.node,
 }
 
 export default Modal
