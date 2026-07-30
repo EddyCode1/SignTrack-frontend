@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
 const menuItems = [
   { id: 1, label: 'Dashboard', path: '/dashboard' },
@@ -44,6 +45,11 @@ const NavbarBlack = ({ isSidebarOpen = true, onToggleSidebar }) => {
       </nav>
     </header>
   )
+}
+
+NavbarBlack.propTypes = {
+  isSidebarOpen: PropTypes.bool,
+  onToggleSidebar: PropTypes.func.isRequired,
 }
 
 export default NavbarBlack
