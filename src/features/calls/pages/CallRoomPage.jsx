@@ -60,6 +60,9 @@ const CallRoomPage = () => {
           }
         }
 
+        // No conectamos ni unimos el hub aquí: MeshCallRoom hace su propio flujo
+        // completo (cámara + hub + JoinCallRoom) al montar. Hacerlo también aquí
+        // duplicaba el join y mandaba dos ofertas WebRTC para la misma conexión.
         setIceServers(
           (joinData.iceServers || []).map((s) => ({
             urls: s.urls,
@@ -67,8 +70,6 @@ const CallRoomPage = () => {
             credential: s.credential,
           }))
         )
-        await getCallsHubConnection()
-        if (!cancelled) await joinCallRoomHub(roomId)
       } catch (err) {
         if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
           setMediaError('Permite acceso a cámara y micrófono para la videollamada.')

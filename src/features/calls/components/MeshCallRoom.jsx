@@ -175,6 +175,11 @@ const MeshCallRoom = ({
     async (remoteUserId) => {
       if (!remoteUserId || remoteUserId === currentUserId) return
       if (makingOfferRef.current.has(remoteUserId)) return
+      // Si ya existe una conexión con esta persona, no se manda otra oferta:
+      // ExistingParticipants puede llegar más de una vez (reconexión del hub,
+      // doble join, etc.) y ofertar dos veces sobre la misma conexión rompe
+      // la negociación WebRTC.
+      if (peerConnectionsRef.current.has(remoteUserId)) return
 
       makingOfferRef.current.add(remoteUserId)
       try {
