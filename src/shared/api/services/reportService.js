@@ -348,7 +348,7 @@ export const reportService = {
   // ============== DESCARGAS ==============
 
   // Descargar reporte en CSV
-  downloadReportCSV: async (id, format = 'csv') => {
+  downloadReportCSV: async (id) => {
     try {
       const report = await fetchReportById(id)
       

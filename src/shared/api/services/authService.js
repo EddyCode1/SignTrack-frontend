@@ -66,7 +66,7 @@ export const authService = {
       })
       const data = response.data?.data || response.data
       return { success: true, user: data }
-    } catch (error) {
+    } catch {
       return { success: false, error: 'Token inválido' }
     }
   },
