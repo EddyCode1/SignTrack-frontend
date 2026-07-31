@@ -415,7 +415,7 @@ const SignLanguagePanel = ({
       </div>
 
       {!usesExternalVideo && (
-        <div className="relative rounded-lg overflow-hidden bg-black/80 aspect-video max-h-48">
+        <div className="relative rounded-lg overflow-hidden bg-black/80 aspect-video max-h-72">
           <video ref={videoRef} className="w-full h-full object-cover mirror-video" muted playsInline />
           <canvas ref={canvasRef} className="hidden" />
           {!active && (

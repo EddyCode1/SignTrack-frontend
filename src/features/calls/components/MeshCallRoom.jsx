@@ -26,12 +26,38 @@ import SignLanguagePanel from '../../chats/components/SignLanguagePanel'
 
 const RemoteVideoTile = ({ stream, label, isSigning }) => {
   const videoRef = useRef(null)
+  const [needsUnmute, setNeedsUnmute] = useState(false)
 
   useEffect(() => {
-    if (videoRef.current && stream) {
-      videoRef.current.srcObject = stream
+    const video = videoRef.current
+    if (!video || !stream) return
+    video.srcObject = stream
+
+    // Chrome bloquea el autoplay con audio si no hubo un gesto del usuario
+    // justo antes (el track puede llegar segundos después de que alguien
+    // pulsó "Unirse"). Si el navegador lo bloquea, forzamos silenciado
+    // para que al menos la imagen se vea, y dejamos un botón para activar
+    // el audio (eso sí cuenta como gesto y el navegador lo permite).
+    const tryPlay = async () => {
+      try {
+        await video.play()
+        setNeedsUnmute(false)
+      } catch {
+        video.muted = true
+        setNeedsUnmute(true)
+        video.play().catch(() => {})
+      }
     }
+    tryPlay()
   }, [stream])
+
+  const handleUnmute = () => {
+    const video = videoRef.current
+    if (!video) return
+    video.muted = false
+    video.play().catch(() => {})
+    setNeedsUnmute(false)
+  }
 
   return (
     <div className="card aspect-video overflow-hidden bg-black relative">
@@ -43,6 +69,15 @@ const RemoteVideoTile = ({ stream, label, isSigning }) => {
         <span className="absolute top-2 left-2 text-xs bg-violet-600 text-white px-2 py-1 rounded-full">
           Firmando
         </span>
+      )}
+      {needsUnmute && (
+        <button
+          type="button"
+          onClick={handleUnmute}
+          className="absolute inset-0 flex items-center justify-center bg-black/50 text-white text-sm"
+        >
+          🔊 Toca para activar audio/video
+        </button>
       )}
     </div>
   )
@@ -63,6 +98,7 @@ const MeshCallRoom = ({
   const [sideChatOpen, setSideChatOpen] = useState(true)
   const [callConversationId, setCallConversationId] = useState(null)
   const [signingUsers, setSigningUsers] = useState({})
+  const [participantNames, setParticipantNames] = useState({})
 
   const localVideoRef = useRef(null)
   const localStreamRef = useRef(null)
@@ -139,6 +175,11 @@ const MeshCallRoom = ({
     async (remoteUserId) => {
       if (!remoteUserId || remoteUserId === currentUserId) return
       if (makingOfferRef.current.has(remoteUserId)) return
+      // Si ya existe una conexión con esta persona, no se manda otra oferta:
+      // ExistingParticipants puede llegar más de una vez (reconexión del hub,
+      // doble join, etc.) y ofertar dos veces sobre la misma conexión rompe
+      // la negociación WebRTC.
+      if (peerConnectionsRef.current.has(remoteUserId)) return
 
       makingOfferRef.current.add(remoteUserId)
       try {
@@ -285,8 +326,9 @@ const MeshCallRoom = ({
       userIds.forEach((uid) => createAndSendOffer(uid))
     })
 
-    const offJoined = onParticipantJoined(({ roomId: rid, userId }) => {
+    const offJoined = onParticipantJoined(({ roomId: rid, userId, displayName }) => {
       if (rid !== roomId || userId === currentUserId) return
+      if (displayName) setParticipantNames((prev) => ({ ...prev, [userId]: displayName }))
     })
 
     const offLeft = onParticipantLeft(({ roomId: rid, userId }) => {
@@ -444,7 +486,7 @@ const MeshCallRoom = ({
               <RemoteVideoTile
                 key={userId}
                 stream={stream}
-                label={participant?.displayName || userId}
+                label={participant?.displayName || participantNames[userId] || userId}
                 isSigning={Boolean(signingUsers[userId])}
               />
             )
@@ -459,8 +501,8 @@ const MeshCallRoom = ({
         </div>
 
         {sideChatOpen && (
-          <div className="w-full lg:w-96 shrink-0 flex flex-col gap-4 min-h-[320px]">
-            <div className="min-h-[200px] flex-1">
+          <div className="w-full lg:w-[30rem] shrink-0 flex flex-col gap-4 min-h-[480px]">
+            <div className="min-h-[160px] max-h-[280px] flex flex-col">
               <CallSideChat roomId={roomId} onConversationReady={setCallConversationId} />
             </div>
             {callConversationId ? (
